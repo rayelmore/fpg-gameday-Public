@@ -1,0 +1,4111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>FPG Game Day</title>
+
+<!-- PWA Meta Tags -->
+<meta name="theme-color" content="#1A2E1A">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<!-- FPG GameDay v7 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FPG Game Day">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="description" content="Florida Players Group — Game Day Calculator">
+
+<!-- PWA Icons (inline SVG as data URI) -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%231A2E1A'/%3E%3Ccircle cx='256' cy='200' r='60' fill='%23C9922A'/%3E%3Cpath d='M256 270 C180 270 120 310 110 390 L402 390 C392 310 332 270 256 270Z' fill='%23C9922A'/%3E%3Cpath d='M256 145 L256 100 M220 160 L185 135 M292 160 L327 135' stroke='%23E8B84B' stroke-width='12' stroke-linecap='round'/%3E%3C/svg%3E">
+
+<!-- Inline Web App Manifest -->
+<script>
+  // Register inline manifest
+  const manifestData = {
+    name: "FPG Game Day",
+    short_name: "FPG",
+    description: "Florida Players Group Game Day Calculator",
+    start_url: ".",
+    display: "standalone",
+    background_color: "#1A2E1A",
+    theme_color: "#1A2E1A",
+    orientation: "portrait",
+    icons: [
+      {
+        src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%231A2E1A'/%3E%3Ccircle cx='256' cy='200' r='60' fill='%23C9922A'/%3E%3Cpath d='M256 270 C180 270 120 310 110 390 L402 390 C392 310 332 270 256 270Z' fill='%23C9922A'/%3E%3C/svg%3E",
+        sizes: "512x512",
+        type: "image/svg+xml",
+        purpose: "any maskable"
+      }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifestData)], {type: 'application/json'});
+  const manifestURL = URL.createObjectURL(blob);
+  document.addEventListener('DOMContentLoaded', () => {
+    const link = document.createElement('link');
+    link.rel = 'manifest';
+    link.href = manifestURL;
+    document.head.appendChild(link);
+  });
+</script>
+
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green:   #1A2E1A;
+  --green2:  #2D4A2D;
+  --green3:  #3D5E3D;
+  --gold:    #C9922A;
+  --gold2:   #E8B84B;
+  --gold3:   #F5D080;
+  --cream:   #F7F3EB;
+  --white:   #FFFFFF;
+  --muted:   rgba(247,243,235,0.5);
+  --card:    rgba(45,74,45,0.6);
+  --input-bg:#243824;
+  --radius:  12px;
+  --radius-sm: 8px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  background: var(--green);
+  color: var(--cream);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── BACKGROUND TEXTURE ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(201,146,42,0.12), transparent),
+    radial-gradient(ellipse 60% 40% at 90% 80%,  rgba(201,146,42,0.07), transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── HEADER ── */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(26,46,26,0.97);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(201,146,42,0.25);
+  padding: 14px 16px 10px;
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.org-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 2px;
+  color: var(--gold);
+  line-height: 1;
+}
+
+.round-badge {
+  background: var(--gold);
+  color: var(--green);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+/* ── TAB BAR ── */
+.tab-bar {
+  display: flex;
+  gap: 4px;
+  margin-top: 10px;
+  background: rgba(0,0,0,0.25);
+  border-radius: 10px;
+  padding: 3px;
+}
+
+.tab-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 4px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.tab-btn.active {
+  background: var(--gold);
+  color: var(--green);
+}
+
+/* ── SCREENS ── */
+.screen { display: none; padding: 16px; position: relative; z-index: 1; }
+.screen.active { display: block; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--card);
+  border: 1px solid rgba(201,146,42,0.2);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 14px;
+  backdrop-filter: blur(8px);
+}
+
+.card-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 17px;
+  letter-spacing: 1.5px;
+  color: var(--gold2);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-title .icon { font-size: 18px; }
+
+/* ── INPUTS ── */
+label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+
+input[type=text], input[type=number], input[type=date], select {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid rgba(201,146,42,0.25);
+  border-radius: var(--radius-sm);
+  color: var(--cream);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  padding: 11px 13px;
+  outline: none;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+}
+
+input:focus, select:focus {
+  border-color: var(--gold);
+  background: rgba(36,56,36,0.9);
+}
+
+select option { background: var(--green2); color: var(--cream); }
+
+.input-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.input-full { margin-bottom: 10px; }
+
+/* ── GAME TOGGLES ── */
+.game-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(201,146,42,0.1);
+}
+.game-toggle:last-child { border-bottom: none; }
+
+.game-info { flex: 1; }
+.game-name { font-weight: 600; font-size: 14px; }
+.game-sub  { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.toggle-area { display: flex; align-items: center; gap: 10px; }
+
+.buy-in-input {
+  width: 72px;
+  background: var(--input-bg);
+  border: 1px solid rgba(201,146,42,0.25);
+  border-radius: var(--radius-sm);
+  color: var(--gold2);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 7px 8px;
+  text-align: center;
+  outline: none;
+}
+.buy-in-input:focus { border-color: var(--gold); }
+
+/* iOS-style switch */
+.switch { position: relative; width: 44px; height: 26px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+  position: absolute; inset: 0;
+  background: rgba(255,255,255,0.15);
+  border-radius: 13px;
+  transition: background 0.25s;
+  cursor: pointer;
+}
+.slider::before {
+  content: '';
+  position: absolute;
+  left: 3px; top: 3px;
+  width: 20px; height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.25s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.switch input:checked + .slider { background: var(--gold); }
+.switch input:checked + .slider::before { transform: translateX(18px); }
+
+/* ── PLAYER LIST ── */
+.player-row {
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(201,146,42,0.15);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.player-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.player-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  color: var(--gold);
+  width: 28px;
+}
+
+.player-name-input {
+  flex: 1;
+  margin: 0 10px;
+  background: var(--input-bg);
+  border: 1px solid rgba(201,146,42,0.2);
+  border-radius: 7px;
+  color: var(--cream);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 10px;
+  outline: none;
+}
+.player-name-input:focus { border-color: var(--gold); }
+.player-name-input::placeholder { color: rgba(247,243,235,0.3); }
+
+.remove-btn {
+  background: rgba(192,0,0,0.15);
+  border: 1px solid rgba(192,0,0,0.3);
+  border-radius: 6px;
+  color: #ff6b6b;
+  font-size: 16px;
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+
+.player-games {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.game-chip {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(201,146,42,0.3);
+  background: rgba(0,0,0,0.2);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.18s;
+  user-select: none;
+}
+.game-chip.on {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--green);
+}
+
+.add-player-btn {
+  width: 100%;
+  background: rgba(201,146,42,0.12);
+  border: 1px dashed rgba(201,146,42,0.4);
+  border-radius: var(--radius-sm);
+  color: var(--gold2);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 13px;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: background 0.2s;
+}
+.add-player-btn:active { background: rgba(201,146,42,0.22); }
+
+/* ── POT SUMMARY CARDS ── */
+.pot-card {
+  background: linear-gradient(135deg, rgba(45,74,45,0.8), rgba(26,46,26,0.9));
+  border: 1px solid rgba(201,146,42,0.3);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+
+.pot-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.pot-name {
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pot-amount {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 26px;
+  color: var(--gold);
+  letter-spacing: 1px;
+}
+
+.pot-detail {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.total-pot-banner {
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+.total-pot-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 4px;
+}
+
+.total-pot-amount {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 44px;
+  color: var(--green);
+  letter-spacing: 2px;
+  line-height: 1;
+}
+
+.total-pot-sub {
+  font-size: 12px;
+  color: rgba(26,46,26,0.65);
+  margin-top: 4px;
+}
+
+/* ── PAYOUT TABLE ── */
+.payout-section { margin-bottom: 16px; }
+
+.payout-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px;
+  letter-spacing: 1px;
+  color: var(--gold2);
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(201,146,42,0.2);
+}
+
+.payout-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.payout-row:last-child { border-bottom: none; }
+
+.payout-place {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  width: 90px;
+}
+
+.payout-winner {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cream);
+  padding: 0 8px;
+}
+
+.payout-winner input {
+  background: var(--input-bg);
+  border: 1px solid rgba(201,146,42,0.2);
+  border-radius: 6px;
+  color: var(--cream);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  padding: 6px 8px;
+  width: 100%;
+  outline: none;
+}
+.payout-winner input:focus { border-color: var(--gold); }
+
+.payout-amount {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  color: var(--gold);
+  letter-spacing: 0.5px;
+  text-align: right;
+  min-width: 64px;
+}
+
+/* ── VARIABLE INPUTS ── */
+.var-input-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.var-input-label { font-size: 13px; font-weight: 500; }
+.var-count-input {
+  width: 64px;
+  background: var(--input-bg);
+  border: 1px solid rgba(201,146,42,0.3);
+  border-radius: 7px;
+  color: var(--gold2);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 8px;
+  text-align: center;
+  outline: none;
+}
+.var-count-input:focus { border-color: var(--gold); }
+
+/* ── LEDGER ── */
+.ledger-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  gap: 10px;
+}
+.ledger-row:last-child { border-bottom: none; }
+
+.ledger-name { flex: 1; font-size: 13px; font-weight: 600; }
+.ledger-paid { font-size: 12px; color: var(--muted); width: 56px; text-align: center; }
+.ledger-won  { font-size: 13px; font-weight: 700; color: var(--gold2); width: 60px; text-align: right; }
+.ledger-net  { font-size: 13px; font-weight: 700; width: 64px; text-align: right; }
+.ledger-net.pos { color: #5dde85; }
+.ledger-net.neg { color: #ff6b6b; }
+
+.ledger-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(201,146,42,0.2);
+  margin-bottom: 4px;
+}
+.ledger-header span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ── CALC BUTTON ── */
+.calc-btn {
+  width: 100%;
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  border: none;
+  border-radius: var(--radius);
+  color: var(--green);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  letter-spacing: 2px;
+  padding: 16px;
+  cursor: pointer;
+  margin-top: 6px;
+  margin-bottom: 20px;
+  transition: opacity 0.2s;
+  box-shadow: 0 4px 20px rgba(201,146,42,0.3);
+}
+.calc-btn:active { opacity: 0.85; }
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.empty-state .em { font-size: 36px; margin-bottom: 10px; }
+
+/* ── CHIP COLORS PER GAME ── */
+.chip-champ.on  { background: #8B0000; border-color: #8B0000; color: #fff; }
+.chip-quota.on  { background: #1a5276; border-color: #1a5276; color: #fff; }
+.chip-skins.on  { background: #145a32; border-color: #145a32; color: #fff; }
+.chip-ctp.on    { background: #6e2f8e; border-color: #6e2f8e; color: #fff; }
+.chip-blind.on  { background: var(--gold); border-color: var(--gold); color: var(--green); }
+
+/* ── ROSTER MEMBER CHIPS ── */
+.member-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(201,146,42,0.25);
+  background: rgba(0,0,0,0.2);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.18s;
+  user-select: none;
+  white-space: nowrap;
+}
+.member-chip.playing {
+  background: var(--green2);
+  border-color: var(--gold);
+  color: var(--cream);
+}
+.member-chip.playing::before {
+  content: '✓';
+  color: var(--gold);
+  font-size: 11px;
+}
+
+/* ── GUEST ROW ── */
+.guest-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.guest-name-input {
+  flex: 1;
+  background: var(--input-bg);
+  border: 1px solid rgba(201,146,42,0.25);
+  border-radius: 7px;
+  color: var(--cream);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  padding: 8px 10px;
+  outline: none;
+}
+.guest-name-input::placeholder { color: rgba(247,243,235,0.3); }
+.guest-name-input:focus { border-color: var(--gold); }
+.guest-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  background: rgba(201,146,42,0.2);
+  border: 1px solid rgba(201,146,42,0.3);
+  color: var(--gold2);
+  padding: 3px 7px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+/* ── PLAYER GAME ROW (compact) ── */
+.player-row-compact {
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.player-row-compact:last-child { border-bottom: none; }
+.player-row-compact .pname {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cream);
+  margin-bottom: 7px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(201,146,42,0.3); border-radius: 2px; }
+
+/* ── INFO ROW ── */
+.info-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(201,146,42,0.15);
+  border: 1px solid rgba(201,146,42,0.3);
+  color: var(--gold2);
+  margin: 3px 3px 3px 0;
+}
+
+.divider {
+  height: 1px;
+  background: rgba(201,146,42,0.15);
+  margin: 14px 0;
+}
+
+.section-note {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: -6px;
+  margin-bottom: 10px;
+  font-style: italic;
+}
+
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="app-header">
+  <div class="header-top">
+    <div class="org-label">⛳ FPG</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div id="save-indicator" style="font-size:10px;color:rgba(201,146,42,0.5);letter-spacing:0.05em"></div>
+      <div class="round-badge">Game Day</div>
+    </div>
+  </div>
+  <div class="tab-bar" id="main-tab-bar">
+    <button class="tab-btn active" onclick="showTab('setup')">Setup</button>
+    <button class="tab-btn" onclick="showTab('players')">Players</button>
+    <button class="tab-btn" onclick="showTab('pots')">Pots</button>
+    <button class="tab-btn" onclick="showTab('payouts')">Payouts</button>
+    <button class="tab-btn" onclick="showTab('ledger')">Ledger</button>
+  </div>
+  <div class="tab-bar" id="scoring-tab-bar" style="margin-top:4px">
+    <button class="tab-btn" onclick="showTab('courses')">⛳ Courses</button>
+    <button class="tab-btn" onclick="showTab('scoring')">📝 Scoring</button>
+    <button class="tab-btn" onclick="showTab('leaderboard')">🏆 Board</button>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- TAB 1: SETUP -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="tab-setup" class="screen active">
+
+  <div class="card">
+    <div class="card-title"><span class="icon">📋</span> Event Info</div>
+    <div class="input-full">
+      <label>Course</label>
+      <select id="course-select" onchange="handleCourseSelect(this.value)"
+        style="width:100%;background:var(--input-bg);border:1px solid rgba(201,146,42,0.25);
+        border-radius:8px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:15px;
+        padding:11px 13px;outline:none;-webkit-appearance:none;margin-bottom:8px">
+        <option value="">— select course —</option>
+      </select>
+      <div id="course-custom-wrap" style="display:none">
+        <input type="text" id="course" placeholder="Enter course name"
+          oninput="saveState()" style="margin-top:0">
+      </div>
+      <!-- Hidden input keeps course name accessible for rest of app when dropdown is used -->
+      <input type="hidden" id="course-name-hidden">
+    </div>
+    <div class="input-row">
+      <div>
+        <label>Date</label>
+        <input type="date" id="event-date">
+      </div>
+      <div>
+        <label>Tee Time</label>
+        <input type="text" id="tee-time" placeholder="9:00 AM">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">🎮</span> Games & Buy-ins</div>
+    <p class="section-note">Toggle each game on/off. Enter the buy-in per player.</p>
+
+    <div class="game-toggle">
+      <div class="game-info">
+        <div class="game-name">🏆 Champion (WTA)</div>
+        <div class="game-sub">Winner take all — highest points</div>
+      </div>
+      <div class="toggle-area">
+        <input class="buy-in-input" type="number" id="bi-champ" value="5" min="0" step="1" placeholder="$">
+        <label class="switch"><input type="checkbox" id="g-champ" checked onchange="renderPlayerChips()"><span class="slider"></span></label>
+      </div>
+    </div>
+
+    <div class="game-toggle">
+      <div class="game-info">
+        <div class="game-name">📊 Quota Game</div>
+        <div class="game-sub">Stableford — top 4 paid</div>
+      </div>
+      <div class="toggle-area">
+        <input class="buy-in-input" type="number" id="bi-quota" value="5" min="0" step="1" placeholder="$">
+        <label class="switch"><input type="checkbox" id="g-quota" checked onchange="renderPlayerChips()"><span class="slider"></span></label>
+      </div>
+    </div>
+
+    <div class="game-toggle">
+      <div class="game-info">
+        <div class="game-name">🦴 Skins Game</div>
+        <div class="game-sub">Per hole — split on ties</div>
+      </div>
+      <div class="toggle-area">
+        <input class="buy-in-input" type="number" id="bi-skins" value="10" min="0" step="1" placeholder="$">
+        <label class="switch"><input type="checkbox" id="g-skins" checked onchange="renderPlayerChips()"><span class="slider"></span></label>
+      </div>
+    </div>
+
+    <div class="game-toggle">
+      <div class="game-info">
+        <div class="game-name">📍 Closest to Pin</div>
+        <div class="game-sub">Par 3s only</div>
+      </div>
+      <div class="toggle-area">
+        <input class="buy-in-input" type="number" id="bi-ctp" value="5" min="0" step="1" placeholder="$">
+        <label class="switch"><input type="checkbox" id="g-ctp" checked onchange="renderPlayerChips()"><span class="slider"></span></label>
+      </div>
+    </div>
+
+    <div class="game-toggle">
+      <div class="game-info">
+        <div class="game-name">🎟️ Blind Draw</div>
+        <div class="game-sub">Random draw — $10 per winner</div>
+      </div>
+      <div class="toggle-area">
+        <input class="buy-in-input" type="number" id="bi-blind" value="5" min="0" step="1" placeholder="$">
+        <label class="switch"><input type="checkbox" id="g-blind" checked onchange="renderPlayerChips()"><span class="slider"></span></label>
+      </div>
+    </div>
+
+    <div style="height:1px;background:rgba(201,146,42,0.15);margin:12px 0"></div>
+
+    <div class="game-toggle">
+      <div class="game-info">
+        <div class="game-name">📐 Stableford Scoring</div>
+        <div class="game-sub">Points per hole (on = Stableford, off = gross only)</div>
+      </div>
+      <div class="toggle-area">
+        <label class="switch"><input type="checkbox" id="g-stableford" checked onchange="saveState()"><span class="slider"></span></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">⚙️</span> Payout Structure</div>
+    <p class="section-note">Quota % must total 100%</p>
+
+    <div style="margin-bottom:10px">
+      <div style="font-size:12px;font-weight:700;color:var(--gold2);margin-bottom:6px">QUOTA SPLITS</div>
+      <div class="input-row">
+        <div><label>1st %</label><input type="number" id="q1" value="40" min="0" max="100"></div>
+        <div><label>2nd %</label><input type="number" id="q2" value="25" min="0" max="100"></div>
+      </div>
+      <div class="input-row">
+        <div><label>3rd %</label><input type="number" id="q3" value="20" min="0" max="100"></div>
+        <div><label>4th %</label><input type="number" id="q4" value="15" min="0" max="100"></div>
+      </div>
+    </div>
+  </div>
+
+  <button class="calc-btn" onclick="showTab('players')">NEXT → ADD PLAYERS</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- TAB 2: PLAYERS -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="tab-players" class="screen">
+  <div class="card" style="padding:12px 16px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="card-title" style="margin:0"><span class="icon">👥</span> Player Roster</div>
+      <div id="player-count-badge" class="info-chip">0 players</div>
+    </div>
+  </div>
+
+  <div class="card" style="padding:12px 16px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="card-title" style="margin:0"><span class="icon">👥</span> Player Roster</div>
+      <div id="player-count-badge" class="info-chip">0 playing</div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:6px">
+      27 members · tap to add to round
+    </div>
+  </div>
+
+  <!-- MEMBER ROSTER: tap to toggle playing -->
+  <div class="card" style="padding:12px 16px;position:sticky;top:106px;z-index:10;
+    box-shadow:0 4px 16px rgba(0,0,0,0.4)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;
+        color:var(--muted)">Tap to add to round</div>
+      <div id="roster-selected-count" style="font-size:11px;color:var(--gold2);font-weight:700"></div>
+    </div>
+    <!-- Inactive chips only — compact, always scrollable -->
+    <div id="roster-inactive-grid" style="display:flex;flex-wrap:wrap;gap:6px;
+      max-height:130px;overflow-y:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch"></div>
+  </div>
+
+  <!-- PLAYING TODAY: active players with HCP + gender controls -->
+  <div id="active-players-section" style="display:none">
+    <div class="card" style="padding:12px 16px;margin-bottom:6px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"
+           onclick="toggleActiveList()" role="button">
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;
+          color:var(--muted)">Playing Today — tap row to remove</div>
+        <div id="active-list-toggle" style="color:var(--gold2);font-size:18px;line-height:1">▾</div>
+      </div>
+      <div id="player-list"></div>
+    </div>
+  </div>
+
+  <button class="calc-btn" onclick="calcAndShowPots()" style="margin-top:4px">CALCULATE POTS →</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- TAB 3: POTS -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="tab-pots" class="screen">
+  <div id="pots-content">
+    <div class="empty-state">
+      <div class="em">💰</div>
+      Add players and tap Calculate Pots to see pot totals
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- TAB 4: PAYOUTS -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="tab-payouts" class="screen">
+  <div id="payouts-content">
+    <div class="empty-state">
+      <div class="em">🏆</div>
+      Calculate pots first, then enter winners here
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- TAB 5: LEDGER -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="tab-ledger" class="screen">
+  <div id="ledger-content">
+    <div class="empty-state">
+      <div class="em">📒</div>
+      Enter winners in Payouts tab to see the ledger
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- TAB 6: COURSES -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="tab-courses" class="screen">
+  <div class="card">
+    <div class="card-title"><span class="icon">⛳</span> Course Manager</div>
+    <p class="section-note">Save course profiles with par and stroke index per hole. Used for scoring and handicap calculations.</p>
+  </div>
+  <div id="courses-list"></div>
+  <button class="calc-btn" onclick="addCourse()" style="background:var(--green2);border:1px solid rgba(201,146,42,0.3)">+ ADD NEW COURSE</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- TAB 7: SCORING -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="tab-scoring" class="screen">
+  <div id="scoring-setup" class="">
+    <div class="card">
+      <div class="card-title"><span class="icon">📝</span> Round Setup</div>
+      <div class="input-full">
+        <label>Select Course</label>
+        <select id="scoring-course-select" style="width:100%;background:var(--input-bg);border:1px solid rgba(201,146,42,0.25);border-radius:8px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:15px;padding:11px 13px;outline:none;-webkit-appearance:none">
+          <option value="">— choose course —</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">👥</span> Groups</div>
+      <p class="section-note">Add groups of up to 4 players. One scorer per group enters all scores.</p>
+      <div id="scoring-groups"></div>
+      <button class="add-player-btn" onclick="addScoringGroup()" style="margin-top:8px">+ Add Group</button>
+    </div>
+
+    <button class="calc-btn" onclick="startRound()">⛳ START ROUND</button>
+  </div>
+
+  <!-- SCORER LOGIN (shown after round starts, before scoring) -->
+  <div id="scorer-login" style="display:none;padding:16px">
+    <div class="card">
+      <div class="card-title"><span class="icon">✏️</span> Who's Scoring?</div>
+      <p class="section-note">Select your name to score for your group.</p>
+      <div id="scorer-login-list"></div>
+    </div>
+    <button onclick="backToSetup()" style="width:100%;background:rgba(255,255,255,0.06);
+      border:1px solid rgba(201,146,42,0.3);border-radius:10px;color:var(--muted);
+      font-family:'DM Sans',sans-serif;font-size:13px;padding:12px;cursor:pointer;margin-top:8px">
+      ← Back to Group Setup
+    </button>
+  </div>
+
+  <div id="scoring-active" style="display:none">
+    <!-- Compact sticky header — hole nav + course + dots all in one tight bar -->
+    <div style="position:sticky;top:0;z-index:50;background:rgba(26,46,26,0.98);
+      backdrop-filter:blur(8px);border-bottom:1px solid rgba(201,146,42,0.25);padding:8px 12px">
+
+      <!-- Row 1: back button + hole nav + next button -->
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <button onclick="backToSetup()" title="Back to setup"
+          style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
+          border-radius:8px;color:var(--muted);font-size:11px;font-weight:700;
+          padding:6px 8px;cursor:pointer;white-space:nowrap;flex-shrink:0">⚙ Setup</button>
+        <div style="display:flex;align-items:center;gap:10px;flex:1;justify-content:center">
+          <button onclick="prevHole()" id="btn-prev-hole"
+            style="background:rgba(201,146,42,0.15);border:1px solid rgba(201,146,42,0.3);
+            border-radius:8px;color:var(--gold2);font-size:20px;width:36px;height:36px;cursor:pointer">‹</button>
+          <div style="text-align:center;min-width:120px">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--gold);
+              letter-spacing:2px;line-height:1" id="hole-display">HOLE 1</div>
+            <div style="font-size:10px;color:var(--muted);white-space:nowrap" id="hole-par-display">Par 4 · SI 1</div>
+          </div>
+          <button onclick="nextHole()" id="btn-next-hole"
+            style="background:rgba(201,146,42,0.15);border:1px solid rgba(201,146,42,0.3);
+            border-radius:8px;color:var(--gold2);font-size:20px;width:36px;height:36px;cursor:pointer">›</button>
+        </div>
+        <button onclick="endRound()" title="Finalize round"
+          style="background:rgba(93,222,133,0.15);border:1px solid rgba(93,222,133,0.3);
+          border-radius:8px;color:#5dde85;font-size:11px;font-weight:700;
+          padding:6px 8px;cursor:pointer;white-space:nowrap;flex-shrink:0">✅ Done</button>
+      </div>
+
+      <!-- Row 2: scorer name + hole dots -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;gap:8px">
+        <div id="active-scorer-label" style="font-size:10px;font-weight:700;
+          color:var(--gold2);white-space:nowrap;flex-shrink:0"></div>
+        <div style="display:flex;justify-content:center;gap:3px;flex-wrap:wrap;flex:1" id="hole-dots"></div>
+      </div>
+    </div>
+
+    <!-- CTP banner (Par 3s only) — compact -->
+    <div id="ctp-banner" style="display:none;margin:8px 12px 0;background:rgba(148,0,211,0.12);
+      border:1px solid rgba(148,0,211,0.35);border-radius:8px;padding:8px 12px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="font-size:11px;font-weight:700;color:#c084fc;white-space:nowrap">📍 CTP</div>
+        <select id="ctp-live-select" onchange="updateLiveCTP()"
+          style="flex:1;background:var(--input-bg);border:1px solid rgba(148,0,211,0.3);
+          border-radius:6px;color:var(--cream);font-family:'DM Sans',sans-serif;
+          font-size:13px;padding:6px 8px;outline:none;-webkit-appearance:none">
+          <option value="">— select CTP —</option>
+        </select>
+        <div id="ctp-current-holder" style="font-size:10px;color:#c084fc;white-space:nowrap"></div>
+      </div>
+    </div>
+
+    <!-- Group scorecards — compact, one screen -->
+    <div id="scoring-group-cards" style="padding:8px 12px 80px"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- TAB 8: LEADERBOARD -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="tab-leaderboard" class="screen" style="padding:0">
+  <div style="padding:16px 16px 0">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold);letter-spacing:2px" id="lb-course-name">FPG LEADERBOARD</div>
+        <div style="font-size:11px;color:var(--muted)" id="lb-hole-status">Round not started</div>
+      </div>
+      <button onclick="refreshLeaderboard()" style="background:rgba(201,146,42,0.15);border:1px solid rgba(201,146,42,0.3);
+        border-radius:8px;color:var(--gold2);font-size:12px;font-weight:700;padding:7px 12px;cursor:pointer">↻ Refresh</button>
+    </div>
+
+    <!-- CTP summary -->
+    <div id="lb-ctp-row" style="display:none;margin-bottom:12px"></div>
+  </div>
+
+  <!-- Leaderboard table -->
+  <div id="leaderboard-table" style="padding:0 16px 100px"></div>
+</div>
+
+<style>
+/* ── SCORING STYLES ── */
+.score-card {
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(201,146,42,0.15);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+.score-card-header {
+  background: var(--green2);
+  padding: 5px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.score-card-header .group-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 14px;
+  letter-spacing: 1px;
+  color: var(--gold2);
+}
+.score-player-row {
+  display: grid;
+  grid-template-columns: 1fr 34px 46px 34px;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.score-player-row:last-child { border-bottom: none; }
+.score-player-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cream);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.score-player-hcp {
+  font-size: 10px;
+  color: var(--muted);
+}
+.score-btn {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: none;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.1s;
+  flex-shrink: 0;
+}
+.score-btn:active { transform: scale(0.88); }
+.score-btn-minus { background: rgba(255,107,107,0.25); color: #ff6b6b; border: 1px solid rgba(255,107,107,0.3); }
+.score-btn-plus  { background: rgba(93,222,133,0.25);  color: #5dde85; border: 1px solid rgba(93,222,133,0.3);  }
+.score-display {
+  text-align: center;
+}
+.score-strokes {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--cream);
+}
+.score-label {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+.pts-badge {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 8px;
+  margin-top: 1px;
+}
+/* Score color coding */
+.score-albatross { color: #FFD700; }
+.score-eagle     { color: #FF6B35; }
+.score-birdie    { color: #5dde85; }
+.score-par       { color: var(--cream); }
+.score-bogey     { color: #ff9f43; }
+.score-double    { color: #ff6b6b; }
+.score-triple    { color: #cc4444; }
+
+/* Hole dots */
+.hole-dot {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 1px solid rgba(201,146,42,0.3);
+  background: rgba(0,0,0,0.2);
+  cursor: pointer;
+  font-size: 8px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted);
+  transition: all 0.15s;
+}
+.hole-dot.active  { background: var(--gold); border-color: var(--gold); color: var(--green); font-weight: 700; }
+.hole-dot.scored  { background: var(--green2); border-color: var(--gold2); color: var(--gold2); }
+
+/* Leaderboard */
+.lb-row {
+  display: grid;
+  grid-template-columns: 28px 1fr 44px 44px 52px;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  transition: background 0.2s;
+}
+.lb-row:first-child { border-top: 1px solid rgba(201,146,42,0.2); }
+.lb-row.lb-leader { background: rgba(201,146,42,0.08); }
+.lb-pos { font-family:'Bebas Neue',sans-serif; font-size:18px; color:var(--muted); text-align:center; }
+.lb-pos.p1 { color: #FFD700; }
+.lb-pos.p2 { color: #C0C0C0; }
+.lb-pos.p3 { color: #CD7F32; }
+.lb-name { font-size:13px; font-weight:600; color:var(--cream); }
+.lb-thru { font-size:11px; color:var(--muted); }
+.lb-gross { font-size:12px; color:var(--muted); text-align:center; }
+.lb-net   { font-size:12px; color:var(--gold2); text-align:center; font-weight:600; }
+.lb-pts   { font-family:'Bebas Neue',sans-serif; font-size:22px; color:var(--gold); text-align:right; }
+
+/* Course editor */
+.course-hole-row {
+  display: grid;
+  grid-template-columns: 28px 80px 80px 1fr;
+  gap: 6px;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 12px;
+}
+.course-hole-row .hole-num { color: var(--muted); font-weight: 700; text-align:center; }
+.hole-input {
+  background: var(--input-bg);
+  border: 1px solid rgba(201,146,42,0.2);
+  border-radius: 6px;
+  color: var(--cream);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 8px;
+  text-align: center;
+  outline: none;
+  width: 100%;
+}
+.hole-input:focus { border-color: var(--gold); }
+
+/* Scoring group setup */
+.scoring-group-setup {
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(201,146,42,0.15);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+.scoring-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.scoring-group-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px;
+  letter-spacing: 1px;
+  color: var(--gold2);
+}
+.player-setup-row {
+  display: grid;
+  grid-template-columns: 1fr 72px;
+  gap: 8px;
+  margin-bottom: 7px;
+  align-items: center;
+}
+.hcp-input {
+  background: var(--input-bg);
+  border: 1px solid rgba(201,146,42,0.25);
+  border-radius: 6px;
+  color: var(--gold2);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 6px;
+  text-align: center;
+  outline: none;
+  width: 100%;
+}
+.hcp-input:focus { border-color: var(--gold); }
+</style>
+
+
+<!-- NEW ROUND FLOATING BUTTON -->
+<div style="position:fixed;bottom:20px;right:16px;z-index:200">
+  <button onclick="newRound()" title="Start New Round" style="
+    background:rgba(26,46,26,0.95);
+    border:1px solid rgba(201,146,42,0.4);
+    border-radius:50%;
+    width:48px;height:48px;
+    font-size:20px;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 16px rgba(0,0,0,0.4);
+    backdrop-filter:blur(8px);
+  ">🔄</button>
+</div>
+
+<script>
+// STATE
+// ════════════════════════════════════════════════════════
+// Full FPG member roster
+const FPG_ROSTER = [
+  { full: "Nick 'Tricky' Campbell",       display: "Nick",     nickname: "Tricky",     gender: "M", hcp: 18 },
+  { full: "Kathy McGill",                  display: "Kathy",    nickname: "",           gender: "F", hcp: 18 },
+  { full: "Sabrina 'SuperGirl' Norwood",   display: "Sabrina",  nickname: "SuperGirl",  gender: "F", hcp: 18 },
+  { full: "Bridgette Thomas",              display: "Bridgette",nickname: "",           gender: "F", hcp: 18 },
+  { full: "Johnny 'J-Star' Starling",      display: "Johnny",   nickname: "J-Star",     gender: "M", hcp: 18 },
+  { full: "BeSean McCray",                 display: "BeSean",   nickname: "",           gender: "M", hcp: 18 },
+  { full: "Benny '/// Stripe' McCray",     display: "Benny",    nickname: "/// Stripe", gender: "M", hcp: 18 },
+  { full: "Susan Leitao",                  display: "Susan",    nickname: "",           gender: "F", hcp: 18 },
+  { full: "Ray 'Sting Ray' Elmore",        display: "Ray",      nickname: "Sting Ray",  gender: "M", hcp: 18 },
+  { full: "Mike Tappin",                   display: "Mike T",   nickname: "",           gender: "M", hcp: 18 },
+  { full: "Ron 'Chief' Caldwell",          display: "Ron",      nickname: "Chief",      gender: "M", hcp: 18 },
+  { full: "Mark Garbutt",                  display: "Mark",     nickname: "",           gender: "M", hcp: 18 },
+  { full: "Noy Cousins",                   display: "Noy",      nickname: "",           gender: "F", hcp: 18 },
+  { full: "Mike Thornton",                 display: "Mike Th",  nickname: "",           gender: "M", hcp: 18 },
+  { full: "Kelleye 'MGK' Elmore",          display: "Kelleye",  nickname: "MGK",        gender: "F", hcp: 18 },
+  { full: "Donnell 'DT' Thomas",           display: "Donnell",  nickname: "DT",         gender: "M", hcp: 18 },
+  { full: "Eddie 'EzzyE' Hughes",          display: "Eddie",    nickname: "EzzyE",      gender: "M", hcp: 18 },
+  { full: "Larry Murdock",                 display: "Larry",    nickname: "",           gender: "M", hcp: 18 },
+  { full: "Dorothy 'Ms Dot' McHenry",      display: "Dorothy",  nickname: "Ms Dot",     gender: "F", hcp: 18 },
+  { full: "Chris Williams",                display: "Chris",    nickname: "",           gender: "M", hcp: 18 },
+  { full: "Darlene Thornton",              display: "Darlene",  nickname: "",           gender: "F", hcp: 18 },
+  { full: "Tasha 'T-Mac' McCray",          display: "Tasha",    nickname: "T-Mac",      gender: "F", hcp: 18 },
+  { full: "Tim 'TT' Graham",               display: "Tim",      nickname: "TT",         gender: "M", hcp: 18 },
+  { full: "Rodney 'HotRod' Davis",         display: "Rodney",   nickname: "HotRod",     gender: "M", hcp: 18 },
+  { full: "Leo Scott",                     display: "Leo",      nickname: "",           gender: "M", hcp: 18 },
+  { full: "David 'Abudabi' Sereke",        display: "Dave",     nickname: "Abudabi",    gender: "M", hcp: 18 },
+  { full: "Nicole Hughes",                 display: "Nicole",   nickname: "",           gender: "F", hcp: 18 },
+];
+
+// Active players array — built from roster selections + guests
+// Each: { id, name, isGuest, games:{}, gender, hcp }
+let players = [];
+let pots = {};
+let playerCount = 0;
+
+// Track which roster members are playing (by full name)
+let activeMemberNames = new Set();
+// Guests
+let guests = []; // { id, name, gender, hcp }
+
+// Per-player overrides: { [fullName]: { gender, hcp } }
+// Loaded from localStorage, takes priority over FPG_ROSTER defaults
+let rosterProfiles = {};
+
+function loadRosterProfiles() {
+  try { rosterProfiles = JSON.parse(localStorage.getItem('fpg_roster_profiles') || '{}'); }
+  catch(e) { rosterProfiles = {}; }
+}
+function saveRosterProfiles() {
+  localStorage.setItem('fpg_roster_profiles', JSON.stringify(rosterProfiles));
+}
+function getMemberProfile(fullName) {
+  const base = FPG_ROSTER.find(m => m.full === fullName) || {};
+  const override = rosterProfiles[fullName] || {};
+  return {
+    gender: override.gender ?? base.gender ?? 'M',
+    hcp:    override.hcp    ?? base.hcp    ?? 18
+  };
+}
+function setMemberProfile(fullName, field, val) {
+  if (!rosterProfiles[fullName]) rosterProfiles[fullName] = {};
+  rosterProfiles[fullName][field] = val;
+  saveRosterProfiles();
+}
+
+// ════════════════════════════════════════════════════════
+// ROSTER RENDERING
+// ════════════════════════════════════════════════════════
+let activeListOpen = true;
+
+function toggleActiveList() {
+  activeListOpen = !activeListOpen;
+  const list   = document.getElementById('player-list');
+  const toggle = document.getElementById('active-list-toggle');
+  if (list)   list.style.display   = activeListOpen ? '' : 'none';
+  if (toggle) toggle.textContent   = activeListOpen ? '▾' : '▸';
+}
+
+function renderRoster() {
+  const grid = document.getElementById('roster-inactive-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  // Only show INACTIVE members as compact tappable chips
+  FPG_ROSTER.forEach(m => {
+    if (activeMemberNames.has(m.full)) return; // active ones shown in player-list
+    const chip = document.createElement('div');
+    chip.className = 'member-chip';
+    const label = m.nickname
+      ? `${m.display} <span style="opacity:0.6;font-size:10px">${m.nickname}</span>`
+      : m.display;
+    chip.innerHTML = label;
+    chip.onclick = () => toggleMember(m.full, chip);
+    grid.appendChild(chip);
+  });
+
+  // Guest chips always show here (with controls)
+  guests.forEach(g => {
+    const chip = document.createElement('div');
+    chip.className = 'member-chip playing';
+    chip.style.cssText = 'display:inline-flex;align-items:center;gap:5px;padding:5px 8px 5px 10px;';
+    chip.innerHTML = `
+      <span style="font-size:10px;font-weight:700;color:var(--gold2)">GUEST</span>
+      <input value="${g.name}" placeholder="Name"
+        style="background:none;border:none;border-bottom:1px solid rgba(201,146,42,0.3);
+          color:var(--cream);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;
+          outline:none;width:72px;padding:0"
+        oninput="updateGuestName('${g.id}',this.value)"
+        onclick="event.stopPropagation()">
+      <button onclick="event.stopPropagation();toggleGuestGender('${g.id}',this)"
+        style="background:${(g.gender||'M')==='F'?'rgba(255,105,180,0.3)':'rgba(100,149,237,0.3)'};
+          border:1px solid ${(g.gender||'M')==='F'?'rgba(255,105,180,0.5)':'rgba(100,149,237,0.5)'};
+          border-radius:10px;color:${(g.gender||'M')==='F'?'#ff69b4':'#6495ed'};
+          font-size:10px;font-weight:700;padding:2px 6px;cursor:pointer;line-height:1.4">
+        ${g.gender || 'M'}
+      </button>
+      <input type="number" min="0" max="36" value="${g.hcp || 18}"
+        onclick="event.stopPropagation()"
+        onchange="event.stopPropagation();updateGuestHcp('${g.id}',this.value)"
+        style="width:36px;background:rgba(0,0,0,0.2);border:1px solid rgba(201,146,42,0.3);
+          border-radius:5px;color:var(--gold2);font-family:'DM Sans',sans-serif;
+          font-size:11px;font-weight:700;padding:2px 4px;text-align:center;outline:none">
+      <span onclick="event.stopPropagation();removeGuest('${g.id}')"
+        style="color:rgba(255,107,107,0.8);font-size:14px;cursor:pointer;padding:0 2px">✕</span>`;
+    grid.appendChild(chip);
+  });
+
+  // Add guest button
+  const addBtn = document.createElement('div');
+  addBtn.style.cssText = 'display:inline-flex;align-items:center;gap:4px;font-size:12px;' +
+    'font-weight:600;padding:7px 12px;border-radius:20px;border:1px dashed rgba(201,146,42,0.4);' +
+    'color:rgba(201,146,42,0.7);cursor:pointer;white-space:nowrap';
+  addBtn.innerHTML = '+ Guest';
+  addBtn.onclick = () => addGuest();
+  grid.appendChild(addBtn);
+
+  // Selected count
+  const countEl = document.getElementById('roster-selected-count');
+  const total = activeMemberNames.size + guests.filter(g => g.name.trim()).length;
+  if (countEl) countEl.textContent = total > 0 ? `${total} playing` : '';
+
+  syncPlayersFromRoster();
+}
+
+function toggleGender(fullName, btn) {
+  const cur  = getMemberProfile(fullName).gender;
+  const next = cur === 'M' ? 'F' : 'M';
+  setMemberProfile(fullName, 'gender', next);
+  // Update in-place without full re-render
+  const p = players.find(x => x.fullName === fullName);
+  if (p) p.gender = next;
+  syncPlayersFromRoster(true); // sync but skip renderActivePlayers
+  renderRoster();               // re-render roster chips only
+  renderActivePlayers();        // re-render active list to update gender badge
+}
+
+function updateMemberHcp(fullName, val) {
+  const hcp = Math.min(36, Math.max(0, parseInt(val) || 0));
+  setMemberProfile(fullName, 'hcp', hcp);
+  // Update in-place without re-rendering the whole list
+  const p = players.find(x => x.fullName === fullName);
+  if (p) p.hcp = hcp;
+  saveState();
+}
+
+function toggleGuestGender(id, btn) {
+  const g = guests.find(x => x.id === id);
+  if (!g) return;
+  g.gender = (g.gender || 'M') === 'M' ? 'F' : 'M';
+  const p = players.find(x => x.id === id);
+  if (p) p.gender = g.gender;
+  renderRoster();
+  saveState();
+}
+
+function updateGuestHcp(id, val) {
+  const g = guests.find(x => x.id === id);
+  if (!g) return;
+  g.hcp = Math.min(36, Math.max(0, parseInt(val) || 0));
+  // Update in-place without re-rendering
+  const p = players.find(x => x.id === id);
+  if (p) p.hcp = g.hcp;
+  saveState();
+}
+
+function toggleMember(fullName, chipEl) {
+  if (activeMemberNames.has(fullName)) {
+    activeMemberNames.delete(fullName);
+    chipEl.classList.remove('playing');
+  } else {
+    activeMemberNames.add(fullName);
+    chipEl.classList.add('playing');
+  }
+  syncPlayersFromRoster();
+  saveState();
+}
+
+// Keep players[] in sync with activeMemberNames + guests
+// skipRender = true when called mid-interaction to avoid destroying DOM state
+function syncPlayersFromRoster(skipRender = false) {
+  const ag = activeGames();
+
+  // Build from active members — preserve existing game selections and hcp
+  const memberPlayers = FPG_ROSTER
+    .filter(m => activeMemberNames.has(m.full))
+    .map(m => {
+      const existing = players.find(p => p.fullName === m.full && !p.isGuest);
+      // Preserve existing games object entirely — only add new game keys
+      const games = existing ? { ...existing.games } : {};
+      ag.forEach(g => { if (!(g.id in games)) games[g.id] = true; });
+      const profile = getMemberProfile(m.full);
+      return {
+        id:       existing?.id || ('m_' + m.full.replace(/\s/g,'')),
+        name:     m.display,
+        fullName: m.full,
+        isGuest:  false,
+        gender:   profile.gender,
+        hcp:      existing?.hcp ?? profile.hcp,  // prefer live value over profile
+        games
+      };
+    });
+
+  // Build from guests — preserve existing game selections
+  const guestPlayers = guests.map(g => {
+    const existing = players.find(p => p.id === g.id);
+    const games = existing ? { ...existing.games } : {};
+    ag.forEach(gm => { if (!(gm.id in games)) games[gm.id] = true; });
+    return {
+      id:      g.id,
+      name:    g.name,
+      isGuest: true,
+      gender:  g.gender || 'M',
+      hcp:     existing?.hcp ?? g.hcp ?? 18,
+      games
+    };
+  });
+
+  players = [...memberPlayers, ...guestPlayers];
+
+  if (!skipRender) renderActivePlayers();
+
+  const section = document.getElementById('active-players-section');
+  if (section) section.style.display = players.length ? '' : 'none';
+}
+
+function renderActivePlayers() {
+  const ag = activeGames();
+  const list = document.getElementById('player-list');
+  if (!list) return;
+  list.innerHTML = '';
+
+  players.forEach((p, idx) => {
+    const num   = idx + 1;
+    const genderF   = (p.gender || 'M') === 'F';
+    const gColor    = genderF ? '#ff69b4' : '#6495ed';
+    const gBg       = genderF ? 'rgba(255,105,180,0.2)' : 'rgba(100,149,237,0.2)';
+    const gBorder   = genderF ? 'rgba(255,105,180,0.4)' : 'rgba(100,149,237,0.4)';
+    const toggleFn  = p.isGuest
+      ? `toggleGuestGender('${p.id}',this)`
+      : `toggleGender('${p.fullName}',this)`;
+    const hcpFn     = p.isGuest
+      ? `updateGuestHcp('${p.id}',this.value)`
+      : `updateMemberHcp('${p.fullName}',this.value)`;
+    const removeFn  = p.isGuest
+      ? `removeGuest('${p.id}')`
+      : `removeMemberFromRound('${p.fullName}')`;
+
+    const div = document.createElement('div');
+    div.className = 'player-row-compact';
+    div.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--gold);
+            min-width:24px;line-height:1">${num}</span>
+          <span style="font-size:13px;font-weight:700;color:var(--cream)">${p.name || '<em style="color:var(--muted)">unnamed</em>'}</span>
+          ${p.isGuest ? '<span class="guest-badge">GUEST</span>' : ''}
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <button onclick="${toggleFn}"
+            style="background:${gBg};border:1px solid ${gBorder};border-radius:10px;
+              color:${gColor};font-size:10px;font-weight:700;padding:3px 8px;
+              cursor:pointer;line-height:1.4">${p.gender || 'M'}</button>
+          <div style="display:flex;align-items:center;gap:3px">
+            <span style="font-size:10px;color:var(--muted)">HCP</span>
+            <input type="number" min="0" max="36" value="${p.hcp ?? 18}"
+              oninput="${hcpFn}"
+              style="width:40px;background:var(--input-bg);border:1px solid rgba(201,146,42,0.3);
+                border-radius:5px;color:var(--gold2);font-family:'DM Sans',sans-serif;
+                font-size:12px;font-weight:700;padding:3px 5px;text-align:center;outline:none">
+          </div>
+          <button onclick="${removeFn}"
+            style="background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.3);
+              border-radius:6px;color:#ff6b6b;font-size:11px;padding:3px 7px;cursor:pointer">
+            Remove
+          </button>
+        </div>
+      </div>
+      <div class="player-games">
+        ${ag.map(g => `
+          <div class="game-chip chip-${g.id} ${p.games[g.id] ? 'on' : ''}"
+               onclick="togglePlayerGame('${p.id}','${g.id}',this)">
+            ${g.label}
+          </div>
+        `).join('')}
+      </div>`;
+    list.appendChild(div);
+  });
+
+  // Update count badges
+  const badge = document.getElementById('player-count-badge');
+  if (badge) badge.textContent = `${players.length} player${players.length !== 1 ? 's' : ''}`;
+  const countEl = document.getElementById('roster-selected-count');
+  const total = activeMemberNames.size + guests.filter(g => g.name.trim()).length;
+  if (countEl) countEl.textContent = total > 0 ? `${total} playing` : '';
+
+  const section = document.getElementById('active-players-section');
+  if (section) section.style.display = players.length ? '' : 'none';
+}
+
+function removeMemberFromRound(fullName) {
+  activeMemberNames.delete(fullName);
+  renderRoster();
+  saveState();
+}
+
+function renderPlayerChips() {
+  syncPlayersFromRoster();
+}
+
+// ════════════════════════════════════════════════════════
+// GUESTS
+// ════════════════════════════════════════════════════════
+function addGuest() {
+  const id = 'g_' + Date.now();
+  guests.push({ id, name: '' });
+  renderRoster();
+  saveState();
+  setTimeout(() => {
+    const grid = document.getElementById('roster-grid');
+    if (grid) grid.scrollTop = grid.scrollHeight;
+  }, 50);
+}
+
+function removeGuest(id) {
+  guests = guests.filter(g => g.id !== id);
+  syncPlayersFromRoster();
+  renderRoster();
+  saveState();
+}
+
+function updateGuestName(id, val) {
+  const g = guests.find(x => x.id === id);
+  if (g) {
+    g.name = val;
+    const p = players.find(x => x.id === id);
+    if (p) p.name = val;
+    renderActivePlayers();
+    // Update selected count
+    const total = activeMemberNames.size + guests.filter(g => g.name.trim()).length;
+    const countEl = document.getElementById('roster-selected-count');
+    if (countEl) countEl.textContent = total > 0 ? `${total} selected` : '';
+    saveState();
+  }
+}
+
+function renderGuests() {
+  renderRoster(); // guests now inline in roster grid
+}
+
+// Legacy — keep these for compatibility
+function addPlayer() { addGuest(); }
+
+function removePlayer(id) {
+  // If it's a guest remove from guests
+  if (id.startsWith('g_')) {
+    removeGuest(id);
+  } else {
+    // It's a member — deactivate them
+    const p = players.find(x => x.id === id);
+    if (p && p.fullName) activeMemberNames.delete(p.fullName);
+    renderRoster();
+  }
+}
+
+function updatePlayerName(id, val) {
+  updateGuestName(id, val);
+}
+
+function togglePlayerGame(pid, gid, el) {
+  const p = players.find(x => x.id === pid);
+  if (!p) return;
+  p.games[gid] = !p.games[gid];
+  el.classList.toggle('on', p.games[gid]);
+  saveState();
+}
+
+// ════════════════════════════════════════════════════════
+// GAMES CONFIG & TABS
+// ════════════════════════════════════════════════════════
+const GAMES = [
+  { id: 'champ', label: 'Champ',  full: '🏆 Champion',   toggleId: 'g-champ',  biId: 'bi-champ' },
+  { id: 'quota', label: 'Quota',  full: '📊 Quota',       toggleId: 'g-quota',  biId: 'bi-quota' },
+  { id: 'skins', label: 'Skins',  full: '🦴 Skins',       toggleId: 'g-skins',  biId: 'bi-skins' },
+  { id: 'ctp',   label: 'CTP',    full: '📍 CTP',         toggleId: 'g-ctp',    biId: 'bi-ctp'   },
+  { id: 'blind', label: 'Blind',  full: '🎟️ Blind',       toggleId: 'g-blind',  biId: 'bi-blind' },
+];
+
+function activeGames() {
+  return GAMES.filter(g => document.getElementById(g.toggleId)?.checked);
+}
+
+// showTab defined below with scoring tabs support
+
+// ════════════════════════════════════════════════════════
+// CALCULATE POTS
+// ════════════════════════════════════════════════════════
+function calcAndShowPots() {
+  pots = {};
+  const ag = activeGames();
+
+  ag.forEach(g => {
+    const bi = parseFloat(document.getElementById(g.biId)?.value) || 0;
+    const count = players.filter(p => p.games[g.id]).length;
+    pots[g.id] = { total: bi * count, perPlayer: bi, count, game: g };
+  });
+
+  renderPots();
+  renderPayouts();
+  saveState();
+  showTab('pots');
+}
+
+function fmt(n) {
+  return '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+function renderPots() {
+  const ag = activeGames();
+  const grandTotal = Object.values(pots).reduce((s, p) => s + p.total, 0);
+  const totalPlayers = players.length;
+  const course = getCourseName() || 'TBD';
+  const date = document.getElementById('event-date').value
+    ? new Date(document.getElementById('event-date').value + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+    : '';
+
+  let html = '';
+
+  // event summary chips
+  html += `<div class="card" style="padding:12px 16px;margin-bottom:10px">
+    <div style="font-size:13px;font-weight:700;color:var(--cream);margin-bottom:6px">${course}${date ? ' · ' + date : ''}</div>
+    <div>
+      <span class="info-chip">👥 ${totalPlayers} Players</span>
+      ${ag.map(g => `<span class="info-chip">${g.full} ${pots[g.id]?.count || 0} in</span>`).join('')}
+    </div>
+  </div>`;
+
+  // grand total banner
+  html += `<div class="total-pot-banner">
+    <div class="total-pot-label">Total Pot</div>
+    <div class="total-pot-amount">${fmt(grandTotal)}</div>
+    <div class="total-pot-sub">${ag.length} active game${ag.length !== 1 ? 's' : ''}</div>
+  </div>`;
+
+  // per-game pots
+  ag.forEach(g => {
+    const pot = pots[g.id];
+    html += `<div class="pot-card">
+      <div class="pot-header">
+        <div class="pot-name">${g.full}</div>
+        <div class="pot-amount">${fmt(pot.total)}</div>
+      </div>
+      <div class="pot-detail">${pot.count} players × ${fmt(pot.perPlayer)} buy-in</div>
+    </div>`;
+  });
+
+  document.getElementById('pots-content').innerHTML = html;
+}
+
+// ════════════════════════════════════════════════════════
+// PAYOUTS
+// ════════════════════════════════════════════════════════
+function renderPayouts() {
+  skinsCount = 1;
+  const ag = activeGames();
+  let html = '';
+
+  const q1 = (parseFloat(document.getElementById('q1').value) || 40) / 100;
+  const q2 = (parseFloat(document.getElementById('q2').value) || 25) / 100;
+  const q3 = (parseFloat(document.getElementById('q3').value) || 20) / 100;
+  const q4 = (parseFloat(document.getElementById('q4').value) || 15) / 100;
+
+  ag.forEach(g => {
+    const pot = pots[g.id] || { total: 0 };
+    html += `<div class="card payout-section">`;
+
+    if (g.id === 'champ') {
+      html += payoutHeader('🏆 Champion — Winner Take All');
+      html += payoutRow('🥇 Winner', 'champ-winner', pot.total, 'champ');
+    }
+
+    else if (g.id === 'quota') {
+      const quotaPot = pot.total;
+      html += payoutHeader('📊 Quota Game');
+      html += payoutRow('🥇 1st Place', 'quota-1', quotaPot * q1, 'quota');
+      html += payoutRow('🥈 2nd Place', 'quota-2', quotaPot * q2, 'quota');
+      html += payoutRow('🥉 3rd Place', 'quota-3', quotaPot * q3, 'quota');
+      html += payoutRow('4️⃣ 4th Place', 'quota-4', quotaPot * q4, 'quota');
+    }
+
+    else if (g.id === 'skins') {
+      html += payoutHeader('🦴 Skins Game');
+      html += `<div style="margin-bottom:12px">
+        <div class="var-input-row">
+          <div class="var-input-label">Number of skins hit</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <button onclick="adjustSkins(-1)" style="width:32px;height:32px;border-radius:50%;background:rgba(201,146,42,0.2);border:1px solid rgba(201,146,42,0.4);color:var(--gold2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">−</button>
+            <span id="skins-count-display" style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--gold);min-width:28px;text-align:center">1</span>
+            <button onclick="adjustSkins(1)" style="width:32px;height:32px;border-radius:50%;background:rgba(201,146,42,0.2);border:1px solid rgba(201,146,42,0.4);color:var(--gold2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">+</button>
+          </div>
+        </div>
+        <div id="skins-per" style="font-size:13px;color:var(--gold2);text-align:right;margin-top:2px">
+          ${fmt(pot.total)} ÷ 1 skin = ${fmt(pot.total)} / skin
+        </div>
+      </div>`;
+      const playerOpts = playerDropdownOptions('skins');
+      for (let i = 1; i <= 18; i++) {
+        html += `<div class="payout-row" id="skin-row-${i}" ${i > 1 ? 'style="display:none"' : ''}>
+          <div class="payout-place" style="font-size:11px;min-width:52px">Skin #${i}</div>
+          <div class="payout-winner">
+            <select id="skin-winner-${i}" style="background:var(--input-bg);border:1px solid rgba(201,146,42,0.25);border-radius:6px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:13px;padding:6px 8px;width:100%;outline:none;-webkit-appearance:none">
+              ${playerOpts}
+            </select>
+          </div>
+          <div class="payout-amount" id="skin-amt-${i}">${fmt(pot.total)}</div>
+        </div>`;
+      }
+    }
+
+    else if (g.id === 'ctp') {
+      const playerOpts = playerDropdownOptions('ctp');
+      html += payoutHeader('📍 Closest to the Pin — 4 Par 3s');
+      html += `
+        <div id="ctp-summary" style="display:flex;align-items:center;justify-content:space-between;
+          background:rgba(0,0,0,0.2);border-radius:8px;padding:9px 12px;margin-bottom:10px">
+          <div style="font-size:12px;color:var(--muted)">
+            Pot: <span style="color:var(--cream);font-weight:600">${fmt(pot.total)}</span>
+            &nbsp;·&nbsp; Winners: <span id="ctp-winner-count" style="color:var(--gold2);font-weight:700">0</span> of 4
+          </div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold)" id="ctp-per-hole">—</div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px;font-style:italic">
+          Payout divides equally among holes with a winner. Leave blank if no winner on that hole.
+        </div>`;
+      for (let i = 1; i <= 4; i++) {
+        html += `<div class="payout-row" id="ctp-row-${i}">
+          <div style="display:flex;flex-direction:column;gap:3px;min-width:70px">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Par 3 #${i}</div>
+            <input type="number" id="ctp-hole-${i}" min="1" max="18" placeholder="Hole #"
+              style="width:64px;background:var(--input-bg);border:1px solid rgba(201,146,42,0.25);border-radius:6px;color:var(--gold2);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;padding:5px 6px;text-align:center;outline:none">
+          </div>
+          <div class="payout-winner">
+            <select id="ctp-winner-${i}" onchange="updateCTP()" style="background:var(--input-bg);border:1px solid rgba(201,146,42,0.25);border-radius:6px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:13px;padding:6px 8px;width:100%;outline:none;-webkit-appearance:none">
+              ${playerOpts}
+            </select>
+          </div>
+          <div class="payout-amount" id="ctp-amt-${i}" style="min-width:60px;text-align:right">—</div>
+        </div>`;
+      }
+    }
+
+    else if (g.id === 'blind') {
+      const total = pot.total;
+      const regularCount = Math.floor(total / 10);
+      const remainder = parseFloat((total - regularCount * 10).toFixed(2));
+      const hasSquirrel = remainder > 0;
+      const blindPlayerOpts = playerDropdownOptions('blind');
+
+      html += payoutHeader('🎟️ Blind Draw');
+      html += `
+        <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:10px 14px;margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+            <div style="font-size:12px;color:var(--muted)">Pot: <span style="color:var(--cream);font-weight:600">${fmt(total)}</span></div>
+            <div style="font-size:12px;color:var(--muted)">${fmt(10)} per draw</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+            <span class="info-chip">🎟️ ${regularCount} draws × $10</span>
+            ${hasSquirrel ? `<span class="info-chip" style="border-color:rgba(255,180,0,0.5);color:#FFB400">🐿️ Blind Squirrel ${fmt(remainder)}</span>` : ''}
+          </div>
+        </div>`;
+
+      // Regular $10 draw rows
+      for (let i = 1; i <= Math.min(regularCount, 30); i++) {
+        html += `<div class="payout-row" id="blind-row-${i}">
+          <div class="payout-place" style="font-size:11px;min-width:60px">Draw #${i}</div>
+          <div class="payout-winner">
+            <select id="blind-winner-${i}" onchange="updateBlindDraw()"
+              style="background:var(--input-bg);border:1px solid rgba(201,146,42,0.25);border-radius:6px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:13px;padding:6px 8px;width:100%;outline:none;-webkit-appearance:none">
+              ${blindPlayerOpts}
+            </select>
+          </div>
+          <div class="payout-amount" id="blind-amt-${i}">${fmt(10)}</div>
+        </div>`;
+      }
+
+      // Blind Squirrel row
+      if (hasSquirrel) {
+        html += `
+          <div style="margin-top:10px;padding-top:10px;border-top:1px dashed rgba(255,180,0,0.3)">
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;
+              color:#FFB400;margin-bottom:8px">🐿️ Blind Squirrel</div>
+            <div class="payout-row" id="blind-squirrel-row">
+              <div class="payout-place" style="font-size:11px;min-width:60px;color:#FFB400">Squirrel</div>
+              <div class="payout-winner">
+                <select id="blind-squirrel-winner" onchange="updateBlindDraw()"
+                  style="background:var(--input-bg);border:1px solid rgba(255,180,0,0.35);border-radius:6px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:13px;padding:6px 8px;width:100%;outline:none;-webkit-appearance:none">
+                  ${blindPlayerOpts}
+                </select>
+              </div>
+              <div class="payout-amount" style="color:#FFB400">${fmt(remainder)}</div>
+            </div>
+          </div>`;
+      }
+    }
+
+    html += `</div>`;
+  });
+
+  html += `<button class="calc-btn" onclick="buildLedger();showTab('ledger')">VIEW LEDGER →</button>`;
+  document.getElementById('payouts-content').innerHTML = html;
+}
+
+function payoutHeader(title) {
+  return `<div class="payout-header">${title}</div>`;
+}
+
+function payoutRow(place, id, amount, gameId) {
+  const playerOpts = playerDropdownOptions(gameId);
+  return `<div class="payout-row">
+    <div class="payout-place">${place}</div>
+    <div class="payout-winner">
+      <select id="${id}" style="background:var(--input-bg);border:1px solid rgba(201,146,42,0.25);border-radius:6px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:13px;padding:6px 8px;width:100%;outline:none;-webkit-appearance:none">
+        ${playerOpts}
+      </select>
+    </div>
+    <div class="payout-amount">${fmt(amount)}</div>
+  </div>`;
+}
+
+let skinsCount = 1;
+
+function adjustSkins(delta) {
+  skinsCount = Math.max(1, Math.min(18, skinsCount + delta));
+  const total = pots['skins']?.total || 0;
+  const per = total / skinsCount;
+  const display = document.getElementById('skins-count-display');
+  const perEl = document.getElementById('skins-per');
+  if (display) display.textContent = skinsCount;
+  if (perEl) perEl.textContent = `${fmt(total)} ÷ ${skinsCount} skin${skinsCount!==1?'s':''} = ${fmt(per)} / skin`;
+  for (let i = 1; i <= 18; i++) {
+    const row = document.getElementById(`skin-row-${i}`);
+    const amt = document.getElementById(`skin-amt-${i}`);
+    if (row) row.style.display = i <= skinsCount ? '' : 'none';
+    if (amt) amt.textContent = fmt(per);
+  }
+}
+
+function playerDropdownOptions(gameId) {
+  // If gameId provided, only show players enrolled in that game
+  const eligible = players.filter(p => {
+    if (!p.name.trim()) return false;
+    if (gameId) return p.games[gameId] === true;
+    return true;
+  });
+  const opts = eligible.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+  return `<option value="">— select player —</option>${opts}`;
+}
+
+function updateCTP() {
+  const total = pots['ctp']?.total || 0;
+  // Count how many Par 3 holes have a winner selected
+  let winnerCount = 0;
+  for (let i = 1; i <= 4; i++) {
+    const sel = document.getElementById(`ctp-winner-${i}`);
+    if (sel && sel.value.trim()) winnerCount++;
+  }
+  const perHole = winnerCount > 0 ? total / winnerCount : 0;
+
+  // Update summary bar
+  const countEl = document.getElementById('ctp-winner-count');
+  const perEl   = document.getElementById('ctp-per-hole');
+  if (countEl) countEl.textContent = winnerCount;
+  if (perEl)   perEl.textContent   = winnerCount > 0 ? fmt(perHole) + ' each' : '—';
+
+  // Update each row amount — show amount only if that hole has a winner
+  for (let i = 1; i <= 4; i++) {
+    const sel    = document.getElementById(`ctp-winner-${i}`);
+    const amtEl  = document.getElementById(`ctp-amt-${i}`);
+    const row    = document.getElementById(`ctp-row-${i}`);
+    const hasWin = sel && sel.value.trim();
+    if (amtEl) {
+      amtEl.textContent = hasWin ? fmt(perHole) : '—';
+      amtEl.style.color = hasWin ? 'var(--gold)' : 'rgba(247,243,235,0.25)';
+    }
+    if (row) {
+      row.style.opacity = hasWin ? '1' : '0.55';
+    }
+  }
+  saveState();
+}
+
+function updateBlind() {
+  // Blind draw is always auto-calculated — nothing to update manually
+}
+
+function updateBlindDraw() {
+  // Enforce one winner per draw — disable already-selected names in other selects
+  const total        = pots['blind']?.total || 0;
+  const regularCount = Math.floor(total / 10);
+  const hasSquirrel  = parseFloat((total - regularCount * 10).toFixed(2)) > 0;
+
+  // Collect all current selections across all blind draw slots
+  const taken = new Set();
+  for (let i = 1; i <= regularCount; i++) {
+    const val = document.getElementById(`blind-winner-${i}`)?.value;
+    if (val) taken.add(val);
+  }
+  if (hasSquirrel) {
+    const val = document.getElementById('blind-squirrel-winner')?.value;
+    if (val) taken.add(val);
+  }
+
+  // Update each select: disable options taken by OTHER slots
+  const allSelects = [];
+  for (let i = 1; i <= regularCount; i++) {
+    const el = document.getElementById(`blind-winner-${i}`);
+    if (el) allSelects.push(el);
+  }
+  if (hasSquirrel) {
+    const el = document.getElementById('blind-squirrel-winner');
+    if (el) allSelects.push(el);
+  }
+
+  allSelects.forEach(sel => {
+    const ownVal = sel.value;
+    Array.from(sel.options).forEach(opt => {
+      if (!opt.value) return; // keep the blank "— select —" always enabled
+      // Disable if taken by a DIFFERENT slot (not this one)
+      opt.disabled = taken.has(opt.value) && opt.value !== ownVal;
+      opt.style.color = opt.disabled ? 'rgba(247,243,235,0.25)' : '';
+    });
+  });
+
+  saveState();
+}
+
+// ════════════════════════════════════════════════════════
+// LEDGER
+// ════════════════════════════════════════════════════════
+function buildLedger() {
+  const ag = activeGames();
+
+  // ── Collect all winnings with game breakdown ──────────
+  // Structure: winnings[name] = { total, games: [{game, detail, amount}] }
+  const winnings = {};
+
+  function addWin(name, game, detail, amount) {
+    if (!name || !amount) return;
+    if (!winnings[name]) winnings[name] = { total: 0, games: [] };
+    winnings[name].total += amount;
+    winnings[name].games.push({ game, detail, amount });
+  }
+
+  // Champion
+  if (pots['champ']) {
+    const n = document.getElementById('champ-winner')?.value?.trim();
+    addWin(n, '🏆 Champion', 'Winner Take All', pots['champ'].total);
+  }
+
+  // Quota
+  if (pots['quota']) {
+    const qPot = pots['quota'].total;
+    const q1p = (parseFloat(document.getElementById('q1')?.value)||40)/100;
+    const q2p = (parseFloat(document.getElementById('q2')?.value)||25)/100;
+    const q3p = (parseFloat(document.getElementById('q3')?.value)||20)/100;
+    const q4p = (parseFloat(document.getElementById('q4')?.value)||15)/100;
+    const places = [['quota-1','1st Place',q1p],['quota-2','2nd Place',q2p],
+                    ['quota-3','3rd Place',q3p],['quota-4','4th Place',q4p]];
+    places.forEach(([id, label, pct]) => {
+      const n = document.getElementById(id)?.value?.trim();
+      addWin(n, '📊 Quota', label, qPot * pct);
+    });
+  }
+
+  // Skins
+  if (pots['skins']) {
+    const skinPer = pots['skins'].total / skinsCount;
+    for (let i = 1; i <= skinsCount; i++) {
+      const n = document.getElementById(`skin-winner-${i}`)?.value?.trim();
+      addWin(n, '🦴 Skins', `Skin #${i}`, skinPer);
+    }
+  }
+
+  // CTP
+  if (pots['ctp']) {
+    const ctpTotal = pots['ctp'].total;
+    const ctpWinnerCount = [1,2,3,4].filter(i => {
+      const el = document.getElementById(`ctp-winner-${i}`);
+      return el && el.value.trim();
+    }).length;
+    const ctpPer = ctpWinnerCount > 0 ? ctpTotal / ctpWinnerCount : 0;
+    for (let i = 1; i <= 4; i++) {
+      const n    = document.getElementById(`ctp-winner-${i}`)?.value?.trim();
+      const hole = document.getElementById(`ctp-hole-${i}`)?.value?.trim();
+      addWin(n, '📍 CTP', `Hole ${hole || i}`, ctpPer);
+    }
+  }
+
+  // Blind Draw — auto-calculated $10 draws + Blind Squirrel
+  if (pots['blind']) {
+    const blindTotal = pots['blind'].total;
+    const regularCount = Math.floor(blindTotal / 10);
+    const remainder = parseFloat((blindTotal - regularCount * 10).toFixed(2));
+    for (let i = 1; i <= regularCount; i++) {
+      const n = document.getElementById(`blind-winner-${i}`)?.value?.trim();
+      addWin(n, '🎟️ Blind Draw', `Draw #${i}`, 10);
+    }
+    if (remainder > 0) {
+      const n = document.getElementById('blind-squirrel-winner')?.value?.trim();
+      addWin(n, '🐿️ Blind Squirrel', `$${remainder.toFixed(2)} draw`, remainder);
+    }
+  }
+
+  // ── Totals ────────────────────────────────────────────
+  const totalPotValue = Object.values(pots).reduce((s,p) => s + p.total, 0);
+  const totalWon      = Object.values(winnings).reduce((s,w) => s + w.total, 0);
+
+  // ── Sort winners by total winnings desc ───────────────
+  const sorted = Object.entries(winnings).sort((a,b) => b[1].total - a[1].total);
+
+  // ── Render ────────────────────────────────────────────
+  let html = `<div class="total-pot-banner" style="margin-bottom:14px">
+    <div class="total-pot-label">💰 Total Distributed</div>
+    <div class="total-pot-amount">${fmt(totalWon)}</div>
+    <div class="total-pot-sub">${sorted.length} winner${sorted.length!==1?'s':''} across ${ag.length} game${ag.length!==1?'s':''}</div>
+  </div>`;
+
+  if (sorted.length === 0) {
+    html += `<div class="empty-state"><div class="em">🏆</div>No winners entered yet.<br>Go to Payouts tab to assign winners.</div>`;
+  } else {
+    sorted.forEach(([name, data]) => {
+      html += `<div class="card" style="padding:14px 16px;margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-weight:700;font-size:15px;color:var(--cream)">${name}</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--gold);letter-spacing:1px">${fmt(data.total)}</div>
+        </div>`;
+
+      // Game breakdown lines
+      data.games.forEach(g => {
+        html += `<div style="display:flex;justify-content:space-between;align-items:center;
+          padding:6px 0;border-top:1px solid rgba(255,255,255,0.06)">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:13px">${g.game}</span>
+            <span style="font-size:11px;color:var(--muted);font-style:italic">${g.detail}</span>
+          </div>
+          <div style="font-size:13px;font-weight:600;color:var(--gold2)">${fmt(g.amount)}</div>
+        </div>`;
+      });
+
+      html += `</div>`;
+    });
+  }
+
+  // ── Balance check ─────────────────────────────────────
+  const diff = totalPotValue - totalWon;
+  if (Math.abs(diff) > 0.01) {
+    html += `<div class="card" style="border-color:rgba(255,107,107,0.4)">
+      <div style="color:#ff6b6b;font-weight:700;font-size:13px;margin-bottom:4px">⚠️ Payout Gap</div>
+      <div style="font-size:12px;color:var(--muted)">${fmt(Math.abs(diff))} ${diff > 0 ? 'not yet assigned' : 'over-assigned — check payouts'}</div>
+    </div>`;
+  } else if (totalWon > 0) {
+    html += `<div class="card" style="border-color:rgba(93,222,133,0.4)">
+      <div style="color:#5dde85;font-weight:700;font-size:13px">✅ Books Balanced</div>
+      <div style="font-size:12px;color:var(--muted)">All ${fmt(totalPotValue)} accounted for</div>
+    </div>`;
+  }
+
+  html += `<button class="calc-btn" onclick="copyRecap()" style="background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;margin-top:6px">📋 COPY WHATSAPP RECAP</button>`;
+
+  document.getElementById('ledger-content').innerHTML = html;
+}
+
+// ════════════════════════════════════════════════════════
+// WHATSAPP RECAP
+// ════════════════════════════════════════════════════════
+function copyRecap() {
+  const course = getCourseName() || 'TBD';
+  const date = document.getElementById('event-date').value
+    ? new Date(document.getElementById('event-date').value + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+    : '';
+  const ag = activeGames();
+
+  let lines = [];
+  lines.push('⛳ FLORIDA PLAYERS GROUP');
+  lines.push('🏌️ GAME DAY RECAP');
+  lines.push(`📍 ${course}${date ? ' | ' + date : ''}`);
+  lines.push(`👥 ${players.length} Players | 💰 ${fmt(Object.values(pots).reduce((s,p)=>s+p.total,0))} Total Pots`);
+  lines.push('');
+  lines.push('━━━━━━━━━━━━━━━━━━━━━━');
+
+  // Champion
+  if (pots['champ']) {
+    const w = document.getElementById('champ-winner')?.value?.trim() || '___';
+    lines.push('');
+    lines.push('🏆 CHAMPION (WINNER TAKE ALL)');
+    lines.push(`${w} — ${fmt(pots['champ'].total)}`);
+  }
+
+  // Quota
+  if (pots['quota']) {
+    const qp = pots['quota'].total;
+    const q1p = (parseFloat(document.getElementById('q1')?.value)||40)/100;
+    const q2p = (parseFloat(document.getElementById('q2')?.value)||25)/100;
+    const q3p = (parseFloat(document.getElementById('q3')?.value)||20)/100;
+    const q4p = (parseFloat(document.getElementById('q4')?.value)||15)/100;
+    lines.push('');
+    lines.push('📊 QUOTA GAME — TOP 4');
+    [['quota-1','1st',q1p],['quota-2','2nd',q2p],['quota-3','3rd',q3p],['quota-4','4th',q4p]].forEach(([id,pl,pct]) => {
+      const n = document.getElementById(id)?.value?.trim() || '___';
+      lines.push(`${pl === '1st' ? '🥇' : pl === '2nd' ? '🥈' : pl === '3rd' ? '🥉' : '4️⃣'} ${pl}: ${n} — ${fmt(qp * pct)}`);
+    });
+  }
+
+  // Skins
+  if (pots['skins']) {
+    const per = pots['skins'].total / skinsCount;
+    lines.push('');
+    lines.push(`🦴 SKINS — ${skinsCount} skin${skinsCount!==1?'s':''} hit | ${fmt(per)} each`);
+    for (let i = 1; i <= skinsCount; i++) {
+      const n = document.getElementById(`skin-winner-${i}`)?.value?.trim() || '___';
+      lines.push(`Skin #${i}: ${n} — ${fmt(per)}`);
+    }
+  }
+
+  // CTP
+  if (pots['ctp']) {
+    const ctpTotal = pots['ctp'].total;
+    const ctpWins = [1,2,3,4].filter(i => document.getElementById(`ctp-winner-${i}`)?.value?.trim());
+    const ctpPer = ctpWins.length > 0 ? ctpTotal / ctpWins.length : 0;
+    lines.push('');
+    lines.push(`📍 CLOSEST TO THE PIN (${ctpWins.length} of 4 holes)`);
+    for (let i = 1; i <= 4; i++) {
+      const hole = document.getElementById(`ctp-hole-${i}`)?.value?.trim() || '___';
+      const n    = document.getElementById(`ctp-winner-${i}`)?.value?.trim();
+      if (n) {
+        lines.push(`Hole ${hole} (Par 3): ${n} — ${fmt(ctpPer)}`);
+      } else {
+        lines.push(`Hole ${hole} (Par 3): No winner`);
+      }
+    }
+    if (ctpWins.length === 0) lines.push(`(No CTP winners — pot of ${fmt(ctpTotal)} carried forward)`);
+  }
+
+  // Blind
+  if (pots['blind']) {
+    const blindTotal = pots['blind'].total;
+    const regularCount = Math.floor(blindTotal / 10);
+    const remainder = parseFloat((blindTotal - regularCount * 10).toFixed(2));
+    lines.push('');
+    lines.push(`🎟️ BLIND DRAW — ${regularCount} draws × $10${remainder > 0 ? ` + 🐿️ Blind Squirrel $${remainder.toFixed(2)}` : ''}`);
+    for (let i = 1; i <= regularCount; i++) {
+      const n = document.getElementById(`blind-winner-${i}`)?.value?.trim() || '___';
+      lines.push(`Draw #${i}: ${n} — $10.00`);
+    }
+    if (remainder > 0) {
+      const n = document.getElementById('blind-squirrel-winner')?.value?.trim() || '___';
+      lines.push(`🐿️ Blind Squirrel: ${n} — $${remainder.toFixed(2)}`);
+    }
+  }
+
+  lines.push('');
+  lines.push('━━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('Florida Players Group');
+
+  const text = lines.join('\n');
+
+  // Try Web Share API first (Android Chrome — works on local files, opens share sheet)
+  if (navigator.share) {
+    navigator.share({ text })
+      .catch(() => showRecapModal(text));
+    return;
+  }
+
+  // Try clipboard API (works when served over HTTPS)
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text)
+      .then(() => showRecapModal(text, true))
+      .catch(() => showRecapModal(text));
+    return;
+  }
+
+  // Final fallback — show modal so user can manually copy
+  showRecapModal(text);
+}
+
+function showRecapModal(text, alreadyCopied = false) {
+  // Remove existing modal if any
+  const existing = document.getElementById('recap-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'recap-modal';
+  modal.style.cssText = `
+    position:fixed;inset:0;z-index:9999;
+    background:rgba(0,0,0,0.85);
+    display:flex;flex-direction:column;
+    font-family:'DM Sans',sans-serif;
+  `;
+
+  modal.innerHTML = `
+    <div style="background:#1A2E1A;border-bottom:1px solid rgba(201,146,42,0.3);
+      padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:#E8B84B">
+        📋 WhatsApp Recap
+      </div>
+      <button onclick="document.getElementById('recap-modal').remove()"
+        style="background:rgba(255,255,255,0.1);border:none;border-radius:6px;
+          color:rgba(247,243,235,0.7);font-size:18px;width:32px;height:32px;cursor:pointer">✕</button>
+    </div>
+
+    <div style="flex:1;overflow-y:auto;padding:14px 16px">
+      ${alreadyCopied
+        ? `<div style="background:rgba(93,222,133,0.15);border:1px solid rgba(93,222,133,0.4);
+            border-radius:8px;padding:10px 14px;margin-bottom:12px;
+            color:#5dde85;font-size:13px;font-weight:600">
+            ✅ Copied to clipboard! Open WhatsApp and paste.
+           </div>`
+        : `<div style="background:rgba(201,146,42,0.12);border:1px solid rgba(201,146,42,0.3);
+            border-radius:8px;padding:10px 14px;margin-bottom:12px;
+            color:#E8B84B;font-size:13px;font-weight:600">
+            👆 Long-press the text below → Select All → Copy → paste in WhatsApp
+           </div>`
+      }
+      <textarea id="recap-text" readonly
+        style="width:100%;height:calc(100vh - 260px);
+          background:#0d1f0d;border:1px solid rgba(201,146,42,0.2);
+          border-radius:8px;color:rgba(247,243,235,0.9);
+          font-family:'DM Sans',sans-serif;font-size:13px;
+          line-height:1.6;padding:12px;resize:none;outline:none;
+          -webkit-user-select:text;user-select:text"
+      >${text}</textarea>
+    </div>
+
+    <div style="padding:12px 16px 28px;background:#1A2E1A;
+      border-top:1px solid rgba(201,146,42,0.2);display:flex;gap:10px;flex-shrink:0">
+      <button onclick="selectRecapText()"
+        style="flex:1;background:rgba(201,146,42,0.15);border:1px solid rgba(201,146,42,0.4);
+          border-radius:10px;color:#E8B84B;font-family:'DM Sans',sans-serif;
+          font-size:14px;font-weight:700;padding:13px;cursor:pointer">
+        Select All Text
+      </button>
+      <button onclick="tryCopyAgain()"
+        style="flex:1;background:linear-gradient(135deg,#25D366,#128C7E);
+          border:none;border-radius:10px;color:#fff;font-family:'DM Sans',sans-serif;
+          font-size:14px;font-weight:700;padding:13px;cursor:pointer">
+        📤 Share
+      </button>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  // Auto-select text on open
+  setTimeout(() => selectRecapText(), 100);
+}
+
+function selectRecapText() {
+  const ta = document.getElementById('recap-text');
+  if (!ta) return;
+  ta.focus();
+  ta.setSelectionRange(0, ta.value.length);
+}
+
+function tryCopyAgain() {
+  const ta = document.getElementById('recap-text');
+  if (!ta) return;
+  const text = ta.value;
+  if (navigator.share) {
+    navigator.share({ text }).catch(() => {});
+    return;
+  }
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = event.target;
+      btn.textContent = '✅ Copied!';
+      setTimeout(() => btn.textContent = '📤 Share', 2000);
+    });
+  } else {
+    selectRecapText();
+    document.execCommand('copy');
+    const btn = event.target;
+    btn.textContent = '✅ Done — paste in WhatsApp';
+    setTimeout(() => btn.textContent = '📤 Share', 2000);
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// LOCAL STORAGE — SAVE & RESTORE
+// ════════════════════════════════════════════════════════
+const LS_KEY = 'fpg_gameday_v2';
+
+function saveState() {
+  try {
+    const setup = {
+      course:         document.getElementById('course')?.value || '',
+      courseSelectId: document.getElementById('course-select')?.value || '',
+      date:     document.getElementById('event-date')?.value || '',
+      teeTime:  document.getElementById('tee-time')?.value || '',
+      stableford: document.getElementById('g-stableford')?.checked ?? true,
+      games: {
+        champ: { on: document.getElementById('g-champ')?.checked, bi: document.getElementById('bi-champ')?.value },
+        quota: { on: document.getElementById('g-quota')?.checked, bi: document.getElementById('bi-quota')?.value },
+        skins: { on: document.getElementById('g-skins')?.checked, bi: document.getElementById('bi-skins')?.value },
+        ctp:   { on: document.getElementById('g-ctp')?.checked,   bi: document.getElementById('bi-ctp')?.value   },
+        blind: { on: document.getElementById('g-blind')?.checked, bi: document.getElementById('bi-blind')?.value },
+      },
+      quotaSplits: {
+        q1: document.getElementById('q1')?.value,
+        q2: document.getElementById('q2')?.value,
+        q3: document.getElementById('q3')?.value,
+        q4: document.getElementById('q4')?.value,
+      }
+    };
+
+    // Collect payout winner selections
+    const payoutWinners = {};
+    // Champ & Quota (text inputs)
+    ['champ-winner','quota-1','quota-2','quota-3','quota-4'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) payoutWinners[id] = el.value;
+    });
+    // Skins (selects)
+    payoutWinners['skins-count'] = skinsCount;
+    for (let i = 1; i <= 18; i++) {
+      const el = document.getElementById(`skin-winner-${i}`);
+      if (el) payoutWinners[`skin-winner-${i}`] = el.value;
+    }
+    // CTP (selects + hole numbers)
+    for (let i = 1; i <= 4; i++) {
+      const w = document.getElementById(`ctp-winner-${i}`);
+      const h = document.getElementById(`ctp-hole-${i}`);
+      if (w) payoutWinners[`ctp-winner-${i}`] = w.value;
+      if (h) payoutWinners[`ctp-hole-${i}`] = h.value;
+    }
+    // Blind draw — auto-calculated, save all winner slots + squirrel
+    const blindTotal = pots['blind']?.total || 0;
+    const blindRegularCount = Math.floor(blindTotal / 10);
+    for (let i = 1; i <= blindRegularCount; i++) {
+      const el = document.getElementById(`blind-winner-${i}`);
+      if (el) payoutWinners[`blind-winner-${i}`] = el.value;
+    }
+    const squirrelEl = document.getElementById('blind-squirrel-winner');
+    if (squirrelEl) payoutWinners['blind-squirrel-winner'] = squirrelEl.value;
+
+    const state = { setup, players, pots, skinsCount, payoutWinners,
+                    activeMemberNames: [...activeMemberNames], guests,
+                    savedAt: Date.now() };
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
+
+    // Flash saved indicator
+    const ind = document.getElementById('save-indicator');
+    if (ind) {
+      ind.textContent = '✓ saved';
+      ind.style.color = 'rgba(93,222,133,0.8)';
+      clearTimeout(ind._t);
+      ind._t = setTimeout(() => {
+        ind.textContent = '';
+      }, 1500);
+    }
+  } catch(e) {
+    console.warn('Save failed:', e);
+  }
+}
+
+function restoreState() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return false;
+    const state = JSON.parse(raw);
+
+    // Restore setup
+    const s = state.setup || {};
+    // Populate course dropdown first, then restore selection
+    populateCourseSelect();
+    if (s.courseSelectId) {
+      const sel = document.getElementById('course-select');
+      if (sel) {
+        sel.value = s.courseSelectId;
+        handleCourseSelect(s.courseSelectId);
+      }
+    }
+    // Restore free-text name (for unlisted courses)
+    if (s.course) {
+      const textEl = document.getElementById('course');
+      if (textEl) textEl.value = s.course;
+    }
+    if (s.date)    document.getElementById('event-date').value = s.date;
+    if (s.teeTime) document.getElementById('tee-time').value = s.teeTime;
+    if (s.stableford !== undefined) {
+      const sf = document.getElementById('g-stableford');
+      if (sf) sf.checked = s.stableford;
+    }
+
+    if (s.games) {
+      Object.entries(s.games).forEach(([gid, v]) => {
+        const tog = document.getElementById(`g-${gid}`);
+        const bi  = document.getElementById(`bi-${gid}`);
+        if (tog && v.on !== undefined) tog.checked = v.on;
+        if (bi  && v.bi !== undefined) bi.value = v.bi;
+      });
+    }
+    if (s.quotaSplits) {
+      ['q1','q2','q3','q4'].forEach(k => {
+        const el = document.getElementById(k);
+        if (el && s.quotaSplits[k]) el.value = s.quotaSplits[k];
+      });
+    }
+
+    // Restore roster selections and guests
+    if (state.activeMemberNames?.length) {
+      activeMemberNames = new Set(state.activeMemberNames);
+    }
+    if (state.guests?.length) {
+      guests = state.guests;
+    }
+    // Restore per-player game selections from saved players[]
+    if (state.players?.length) {
+      players = state.players;
+    }
+    renderRoster();
+    renderGuests();
+
+    // Restore pots
+    if (state.pots && Object.keys(state.pots).length) {
+      pots = state.pots;
+      renderPots();
+      renderPayouts();
+
+      // Restore payout winners AFTER renderPayouts() has built the DOM
+      skinsCount = state.skinsCount || 1;
+      const pw = state.payoutWinners || {};
+      setTimeout(() => {
+        adjustSkins(0); // re-renders skins rows with correct count
+        Object.entries(pw).forEach(([id, val]) => {
+          if (id === 'skins-count') return;
+          const el = document.getElementById(id);
+          if (el) el.value = val;
+        });
+        updateCTP(); // re-run CTP amounts after restoring selections
+      }, 50);
+    }
+
+    return true;
+  } catch(e) {
+    console.warn('Restore failed:', e);
+    return false;
+  }
+}
+
+function newRound() {
+  if (!confirm('Start a new round? This will clear all player, payout, and scoring data.')) return;
+
+  // Clear all app localStorage keys
+  localStorage.removeItem(LS_KEY);
+  localStorage.removeItem('fpg_round');
+
+  // Reset all in-memory state
+  players           = [];
+  pots              = {};
+  activeMemberNames = new Set();
+  guests            = [];
+  scoringGroups     = [];
+  roundState        = null;
+  currentHole       = 1;
+  skinsCount        = 1;
+
+  location.reload();
+}
+
+// Auto-save on any input change anywhere in the document
+document.addEventListener('input',  () => saveState(), true);
+document.addEventListener('change', () => saveState(), true);
+document.addEventListener('click',  () => setTimeout(saveState, 100), true);
+
+// ════════════════════════════════════════════════════════
+// SERVICE WORKER (inline — makes app work offline)
+// ════════════════════════════════════════════════════════
+function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  const swCode = `
+    const CACHE = 'fpg-gameday-v3';
+    const FONTS = [
+      'https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap'
+    ];
+    self.addEventListener('install', e => {
+      e.waitUntil(
+        caches.open(CACHE).then(c => c.addAll(FONTS).catch(() => {}))
+      );
+      self.skipWaiting();
+    });
+    self.addEventListener('activate', e => {
+      e.waitUntil(caches.keys().then(keys =>
+        Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+      ));
+      self.clients.claim();
+    });
+    self.addEventListener('fetch', e => {
+      e.respondWith(
+        caches.match(e.request).then(cached => {
+          if (cached) return cached;
+          return fetch(e.request).then(resp => {
+            if (resp && resp.status === 200 && resp.type !== 'opaque') {
+              const clone = resp.clone();
+              caches.open(CACHE).then(c => c.put(e.request, clone));
+            }
+            return resp;
+          }).catch(() => cached);
+        })
+      );
+    });
+  `;
+  const blob = new Blob([swCode], { type: 'application/javascript' });
+  const url  = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(url).catch(() => {});
+}
+
+// ════════════════════════════════════════════════════════
+// ANDROID / CHROME INSTALL PROMPT
+// ════════════════════════════════════════════════════════
+let deferredInstallPrompt = null;
+
+// Chrome fires this when the app is installable
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  // Show our custom install banner after a short delay
+  setTimeout(() => showInstallBanner(), 1500);
+});
+
+// Hide banner once installed
+window.addEventListener('appinstalled', () => {
+  const banner = document.getElementById('install-banner');
+  if (banner) banner.remove();
+  deferredInstallPrompt = null;
+});
+
+function showInstallBanner() {
+  if (document.getElementById('install-banner')) return;
+  // Don't show if already running as installed PWA
+  if (window.matchMedia('(display-mode: standalone)').matches) return;
+
+  const banner = document.createElement('div');
+  banner.id = 'install-banner';
+  banner.style.cssText = `
+    position:fixed;bottom:0;left:0;right:0;z-index:9999;
+    background:linear-gradient(135deg,#1A2E1A,#2D4A2D);
+    border-top:2px solid rgba(201,146,42,0.5);
+    padding:14px 16px 28px;
+    font-family:'DM Sans',sans-serif;
+    display:flex;align-items:flex-start;gap:12px;
+    box-shadow:0 -4px 24px rgba(0,0,0,0.4);
+  `;
+  banner.innerHTML = `
+    <div style="font-size:28px;line-height:1;margin-top:2px">⛳</div>
+    <div style="flex:1">
+      <div style="font-weight:700;font-size:14px;color:#E8B84B;margin-bottom:4px">Install FPG Game Day</div>
+      <div style="font-size:12px;color:rgba(247,243,235,0.75);line-height:1.5;margin-bottom:10px">
+        Install the app on your home screen for quick access — works offline too.
+      </div>
+      <button onclick="triggerInstall()" style="
+        background:linear-gradient(135deg,#C9922A,#E8B84B);
+        border:none;border-radius:8px;
+        color:#1A2E1A;font-family:'DM Sans',sans-serif;
+        font-size:13px;font-weight:700;
+        padding:9px 20px;cursor:pointer;
+        margin-right:8px;
+      ">⬇ Install App</button>
+      <button onclick="document.getElementById('install-banner').remove()" style="
+        background:rgba(255,255,255,0.08);
+        border:1px solid rgba(255,255,255,0.15);
+        border-radius:8px;color:rgba(247,243,235,0.6);
+        font-family:'DM Sans',sans-serif;font-size:13px;
+        padding:9px 16px;cursor:pointer;
+      ">Not now</button>
+    </div>
+    <div onclick="document.getElementById('install-banner').remove()"
+         style="color:rgba(247,243,235,0.4);font-size:20px;padding:0 4px;cursor:pointer;line-height:1;margin-top:2px">✕</div>
+  `;
+  document.body.appendChild(banner);
+}
+
+function triggerInstall() {
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then(choice => {
+      deferredInstallPrompt = null;
+      const banner = document.getElementById('install-banner');
+      if (banner) banner.remove();
+    });
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  // Datalist helper for player name suggestions
+  const dl = document.createElement('datalist');
+  dl.id = 'player-list-data';
+  document.body.appendChild(dl);
+
+  // Register service worker for offline support
+  registerServiceWorker();
+
+  // Try to restore saved state
+  const restored = restoreState();
+
+  // If nothing saved, set defaults and render fresh roster
+  if (!restored) {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('event-date').value = today;
+    populateCourseSelect();
+    renderRoster();
+    renderGuests();
+  }
+});
+
+// ════════════════════════════════════════════════════════
+// COURSE DATA
+// ════════════════════════════════════════════════════════
+// Default par for a blank course
+function blankHoles() {
+  return Array.from({length:18}, (_,i) => ({
+    hole: i+1, par: 4, si: i+1
+  }));
+}
+function blankHolesF() {
+  return Array.from({length:18}, (_,i) => ({
+    hole: i+1, par: 4, si: i+1
+  }));
+}
+
+const DEFAULT_COURSES = [
+  {
+    id: 'diamondhill', name: 'Diamond Hill Golf Club',
+    holes: [
+      {hole:1,par:4,si:15},{hole:2,par:5,si:7},{hole:3,par:3,si:5},
+      {hole:4,par:4,si:13},{hole:5,par:4,si:11},{hole:6,par:3,si:9},
+      {hole:7,par:4,si:17},{hole:8,par:4,si:3},{hole:9,par:5,si:1},
+      {hole:10,par:4,si:16},{hole:11,par:4,si:6},{hole:12,par:3,si:14},
+      {hole:13,par:5,si:2},{hole:14,par:4,si:8},{hole:15,par:3,si:4},
+      {hole:16,par:4,si:10},{hole:17,par:5,si:18},{hole:18,par:4,si:12}
+    ],
+    holesF: [
+      {hole:1,par:4,si:15},{hole:2,par:5,si:7},{hole:3,par:3,si:5},
+      {hole:4,par:4,si:13},{hole:5,par:4,si:11},{hole:6,par:3,si:9},
+      {hole:7,par:4,si:17},{hole:8,par:4,si:3},{hole:9,par:5,si:1},
+      {hole:10,par:4,si:16},{hole:11,par:4,si:6},{hole:12,par:3,si:14},
+      {hole:13,par:5,si:2},{hole:14,par:4,si:8},{hole:15,par:3,si:4},
+      {hole:16,par:4,si:10},{hole:17,par:5,si:18},{hole:18,par:4,si:12}
+    ]
+  },
+  {
+    id: 'huntingtonhills', name: 'Huntington Hills G&CC',
+    holes: [
+      {hole:1,par:4,si:15},{hole:2,par:4,si:3},{hole:3,par:4,si:1},
+      {hole:4,par:3,si:13},{hole:5,par:5,si:7},{hole:6,par:3,si:11},
+      {hole:7,par:5,si:9},{hole:8,par:4,si:17},{hole:9,par:4,si:5},
+      {hole:10,par:5,si:8},{hole:11,par:3,si:10},{hole:12,par:4,si:2},
+      {hole:13,par:4,si:4},{hole:14,par:3,si:14},{hole:15,par:5,si:6},
+      {hole:16,par:4,si:12},{hole:17,par:4,si:8},{hole:18,par:4,si:16}
+    ],
+    holesF: [
+      {hole:1,par:4,si:15},{hole:2,par:4,si:3},{hole:3,par:4,si:1},
+      {hole:4,par:3,si:13},{hole:5,par:5,si:7},{hole:6,par:3,si:11},
+      {hole:7,par:5,si:9},{hole:8,par:4,si:17},{hole:9,par:4,si:5},
+      {hole:10,par:5,si:8},{hole:11,par:3,si:10},{hole:12,par:4,si:2},
+      {hole:13,par:4,si:4},{hole:14,par:3,si:14},{hole:15,par:5,si:6},
+      {hole:16,par:4,si:12},{hole:17,par:4,si:8},{hole:18,par:4,si:16}
+    ]
+  },
+  {
+    id: 'heritageisles', name: 'Heritage Isles G&CC',
+    holes: [
+      {hole:1,par:4,si:12},{hole:2,par:5,si:4},{hole:3,par:4,si:8},
+      {hole:4,par:4,si:6},{hole:5,par:3,si:18},{hole:6,par:4,si:10},
+      {hole:7,par:5,si:2},{hole:8,par:3,si:16},{hole:9,par:4,si:14},
+      {hole:10,par:4,si:7},{hole:11,par:5,si:1},{hole:12,par:4,si:11},
+      {hole:13,par:3,si:15},{hole:14,par:4,si:5},{hole:15,par:5,si:3},
+      {hole:16,par:3,si:17},{hole:17,par:4,si:13},{hole:18,par:4,si:9}
+    ],
+    holesF: [
+      {hole:1,par:4,si:12},{hole:2,par:5,si:4},{hole:3,par:4,si:8},
+      {hole:4,par:4,si:6},{hole:5,par:3,si:18},{hole:6,par:4,si:10},
+      {hole:7,par:5,si:2},{hole:8,par:3,si:16},{hole:9,par:4,si:14},
+      {hole:10,par:4,si:7},{hole:11,par:5,si:1},{hole:12,par:4,si:11},
+      {hole:13,par:3,si:15},{hole:14,par:4,si:5},{hole:15,par:5,si:3},
+      {hole:16,par:3,si:17},{hole:17,par:4,si:13},{hole:18,par:4,si:9}
+    ]
+  },
+  {
+    id: 'cypresscreek', name: 'Cypress Creek Golf Club',
+    holes: [
+      {hole:1,par:4,si:11},{hole:2,par:4,si:1},{hole:3,par:4,si:15},
+      {hole:4,par:5,si:5},{hole:5,par:4,si:3},{hole:6,par:3,si:17},
+      {hole:7,par:5,si:7},{hole:8,par:3,si:9},{hole:9,par:4,si:13},
+      {hole:10,par:4,si:12},{hole:11,par:4,si:14},{hole:12,par:4,si:4},
+      {hole:13,par:3,si:18},{hole:14,par:5,si:16},{hole:15,par:4,si:2},
+      {hole:16,par:4,si:8},{hole:17,par:3,si:10},{hole:18,par:5,si:6}
+    ],
+    holesF: [
+      {hole:1,par:4,si:11},{hole:2,par:4,si:1},{hole:3,par:4,si:15},
+      {hole:4,par:5,si:5},{hole:5,par:4,si:3},{hole:6,par:3,si:17},
+      {hole:7,par:5,si:7},{hole:8,par:3,si:9},{hole:9,par:4,si:13},
+      {hole:10,par:4,si:12},{hole:11,par:4,si:14},{hole:12,par:4,si:4},
+      {hole:13,par:3,si:18},{hole:14,par:5,si:16},{hole:15,par:4,si:2},
+      {hole:16,par:4,si:8},{hole:17,par:3,si:10},{hole:18,par:5,si:6}
+    ]
+  },
+  {
+    id: 'summerfieldcrossings', name: 'Summerfield Crossings GC',
+    holes: [
+      {hole:1,par:4,si:12},{hole:2,par:3,si:18},{hole:3,par:5,si:4},
+      {hole:4,par:4,si:10},{hole:5,par:4,si:2},{hole:6,par:4,si:16},
+      {hole:7,par:4,si:6},{hole:8,par:3,si:14},{hole:9,par:5,si:8},
+      {hole:10,par:4,si:11},{hole:11,par:4,si:13},{hole:12,par:3,si:17},
+      {hole:13,par:4,si:5},{hole:14,par:4,si:9},{hole:15,par:3,si:7},
+      {hole:16,par:4,si:15},{hole:17,par:4,si:1},{hole:18,par:5,si:3}
+    ],
+    holesF: [
+      {hole:1,par:4,si:12},{hole:2,par:3,si:18},{hole:3,par:5,si:4},
+      {hole:4,par:4,si:10},{hole:5,par:4,si:2},{hole:6,par:4,si:16},
+      {hole:7,par:4,si:6},{hole:8,par:3,si:14},{hole:9,par:5,si:8},
+      {hole:10,par:4,si:11},{hole:11,par:4,si:13},{hole:12,par:3,si:17},
+      {hole:13,par:4,si:5},{hole:14,par:4,si:9},{hole:15,par:3,si:7},
+      {hole:16,par:4,si:15},{hole:17,par:4,si:1},{hole:18,par:5,si:3}
+    ]
+  },
+  {
+    id: 'riverclub', name: 'The River Club (Bradenton)',
+    holes: [
+      {hole:1,par:4,si:4},{hole:2,par:3,si:14},{hole:3,par:5,si:8},
+      {hole:4,par:4,si:18},{hole:5,par:5,si:2},{hole:6,par:4,si:10},
+      {hole:7,par:4,si:6},{hole:8,par:3,si:16},{hole:9,par:4,si:12},
+      {hole:10,par:4,si:7},{hole:11,par:4,si:5},{hole:12,par:3,si:15},
+      {hole:13,par:5,si:9},{hole:14,par:4,si:3},{hole:15,par:3,si:17},
+      {hole:16,par:4,si:1},{hole:17,par:5,si:11},{hole:18,par:4,si:13}
+    ],
+    holesF: [
+      {hole:1,par:4,si:4},{hole:2,par:3,si:14},{hole:3,par:5,si:8},
+      {hole:4,par:4,si:18},{hole:5,par:5,si:2},{hole:6,par:4,si:10},
+      {hole:7,par:4,si:6},{hole:8,par:3,si:16},{hole:9,par:4,si:12},
+      {hole:10,par:4,si:7},{hole:11,par:4,si:5},{hole:12,par:3,si:15},
+      {hole:13,par:5,si:9},{hole:14,par:4,si:3},{hole:15,par:3,si:17},
+      {hole:16,par:4,si:1},{hole:17,par:5,si:11},{hole:18,par:4,si:13}
+    ]
+  },
+  {
+    id: 'lexingtonoaks', name: 'Lexington Oaks Golf Club',
+    holes: [
+      {hole:1,par:4,si:15},{hole:2,par:3,si:9},{hole:3,par:4,si:11},
+      {hole:4,par:5,si:1},{hole:5,par:3,si:17},{hole:6,par:5,si:5},
+      {hole:7,par:4,si:7},{hole:8,par:4,si:3},{hole:9,par:4,si:13},
+      {hole:10,par:4,si:8},{hole:11,par:4,si:2},{hole:12,par:4,si:16},
+      {hole:13,par:3,si:18},{hole:14,par:5,si:6},{hole:15,par:4,si:4},
+      {hole:16,par:4,si:14},{hole:17,par:3,si:12},{hole:18,par:5,si:10}
+    ],
+    holesF: [
+      {hole:1,par:4,si:15},{hole:2,par:3,si:9},{hole:3,par:4,si:11},
+      {hole:4,par:5,si:1},{hole:5,par:3,si:17},{hole:6,par:5,si:5},
+      {hole:7,par:4,si:7},{hole:8,par:4,si:3},{hole:9,par:4,si:13},
+      {hole:10,par:4,si:8},{hole:11,par:4,si:2},{hole:12,par:4,si:16},
+      {hole:13,par:3,si:18},{hole:14,par:5,si:6},{hole:15,par:4,si:4},
+      {hole:16,par:4,si:14},{hole:17,par:3,si:12},{hole:18,par:5,si:10}
+    ]
+  },
+  {
+    id: 'greenfieldplantation', name: 'Greenfield Plantation (Links)',
+    holes: [
+      {hole:1,par:5,si:7},{hole:2,par:4,si:11},{hole:3,par:3,si:15},
+      {hole:4,par:4,si:5},{hole:5,par:4,si:13},{hole:6,par:3,si:17},
+      {hole:7,par:4,si:3},{hole:8,par:5,si:1},{hole:9,par:4,si:9},
+      {hole:10,par:5,si:6},{hole:11,par:4,si:4},{hole:12,par:3,si:12},
+      {hole:13,par:4,si:8},{hole:14,par:4,si:18},{hole:15,par:3,si:10},
+      {hole:16,par:5,si:14},{hole:17,par:4,si:16},{hole:18,par:4,si:2}
+    ],
+    holesF: [
+      {hole:1,par:5,si:7},{hole:2,par:4,si:11},{hole:3,par:3,si:15},
+      {hole:4,par:4,si:5},{hole:5,par:4,si:13},{hole:6,par:3,si:17},
+      {hole:7,par:4,si:3},{hole:8,par:5,si:1},{hole:9,par:4,si:9},
+      {hole:10,par:5,si:6},{hole:11,par:4,si:4},{hole:12,par:3,si:12},
+      {hole:13,par:4,si:8},{hole:14,par:4,si:18},{hole:15,par:3,si:10},
+      {hole:16,par:5,si:14},{hole:17,par:4,si:16},{hole:18,par:4,si:2}
+    ]
+  }
+];
+
+let savedCourses = [];   // loaded from localStorage + defaults
+let roundState = null;   // active round
+let currentHole = 1;     // 1-18
+
+// ════════════════════════════════════════════════════════
+// UPDATE showTab to handle all tabs including scoring
+// ════════════════════════════════════════════════════════
+function showTab(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const screen = document.getElementById('tab-' + name);
+  if (screen) screen.classList.add('active');
+
+  // Highlight correct button
+  const allBtns = document.querySelectorAll('.tab-btn');
+  const map1 = ['setup','players','pots','payouts','ledger'];
+  const map2 = ['courses','scoring','leaderboard'];
+  const idx1 = map1.indexOf(name);
+  const idx2 = map2.indexOf(name);
+  if (idx1 >= 0) allBtns[idx1]?.classList.add('active');
+  if (idx2 >= 0) allBtns[5 + idx2]?.classList.add('active');
+
+  if (name === 'ledger')      buildLedger();
+  if (name === 'courses')     renderCourses();
+  if (name === 'scoring')     renderScoringSetup();
+  if (name === 'leaderboard') refreshLeaderboard();
+}
+
+// ════════════════════════════════════════════════════════
+// COURSE MANAGER
+// ════════════════════════════════════════════════════════
+function loadCourses() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('fpg_courses') || '[]');
+    // Merge: saved courses override defaults by id
+    const savedIds = new Set(saved.map(c => c.id));
+    savedCourses = [
+      ...DEFAULT_COURSES.filter(c => !savedIds.has(c.id)),
+      ...saved
+    ];
+  } catch(e) {
+    savedCourses = [...DEFAULT_COURSES];
+  }
+}
+
+function saveCourses() {
+  // Only save non-default courses + modified defaults
+  localStorage.setItem('fpg_courses', JSON.stringify(savedCourses));
+}
+
+function addCourse() {
+  const id = 'c_' + Date.now();
+  savedCourses.push({ id, name: 'New Course', holes: blankHoles(), holesF: blankHolesF() });
+  saveCourses();
+  renderCourses();
+}
+
+function deleteCourse(id) {
+  if (!confirm('Delete this course?')) return;
+  savedCourses = savedCourses.filter(c => c.id !== id);
+  saveCourses();
+  renderCourses();
+}
+
+function renderCourses() {
+  loadCourses();
+  const list = document.getElementById('courses-list');
+  if (!list) return;
+  list.innerHTML = '';
+
+  savedCourses.forEach(course => {
+    if (!course.holesF) course.holesF = JSON.parse(JSON.stringify(course.holes));
+    const totalParM = course.holes.reduce((s,h) => s+h.par, 0);
+    const totalParF = course.holesF.reduce((s,h) => s+h.par, 0);
+
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.style.marginBottom = '10px';
+
+    div.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <input value="${course.name}" style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;
+          color:var(--gold2);background:none;border:none;border-bottom:1px solid rgba(201,146,42,0.3);
+          outline:none;flex:1;padding-bottom:2px"
+          onchange="updateCourseName('${course.id}', this.value)">
+        <button onclick="deleteCourse('${course.id}')" style="background:rgba(255,107,107,0.12);border:1px solid rgba(255,107,107,0.25);
+          border-radius:6px;color:#ff6b6b;font-size:11px;padding:4px 8px;cursor:pointer;margin-left:8px;flex-shrink:0">Remove</button>
+      </div>
+
+      <!-- Tee selector tabs -->
+      <div style="display:flex;gap:4px;margin-bottom:12px;background:rgba(0,0,0,0.2);border-radius:8px;padding:3px">
+        <button onclick="showCourseTee('${course.id}','M',this)"
+          id="tee-btn-M-${course.id}"
+          style="flex:1;padding:6px;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700;
+          background:rgba(100,149,237,0.3);color:#6495ed">
+          🔵 Men's Tee (Par ${totalParM})
+        </button>
+        <button onclick="showCourseTee('${course.id}','F',this)"
+          id="tee-btn-F-${course.id}"
+          style="flex:1;padding:6px;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700;
+          background:rgba(0,0,0,0.1);color:var(--muted)">
+          🔴 Women's Tee (Par ${totalParF})
+        </button>
+      </div>
+
+      <!-- Men's tee holes -->
+      <div id="tee-M-${course.id}">
+        <div style="display:grid;grid-template-columns:24px 70px 70px 1fr;gap:6px;margin-bottom:4px;padding:0 2px">
+          <div style="font-size:10px;font-weight:700;color:var(--muted);text-align:center">#</div>
+          <div style="font-size:10px;font-weight:700;color:var(--muted);text-align:center">Par</div>
+          <div style="font-size:10px;font-weight:700;color:var(--muted);text-align:center">SI (M)</div>
+          <div></div>
+        </div>
+        ${course.holes.map(h => `
+          <div class="course-hole-row">
+            <div class="hole-num">${h.hole}</div>
+            <select class="hole-input" onchange="updateHolePar('${course.id}',${h.hole},this.value,'M')">
+              ${[3,4,5].map(p=>`<option value="${p}" ${h.par==p?'selected':''}>${p}</option>`).join('')}
+            </select>
+            <input type="number" class="hole-input" min="1" max="18" value="${h.si}"
+              onchange="updateHoleSI('${course.id}',${h.hole},this.value,'M')" placeholder="SI">
+            <div style="font-size:10px;color:var(--muted)">${h.par===3?'P3':''} ${h.si===1?'★':''}</div>
+          </div>`).join('')}
+      </div>
+
+      <!-- Women's tee holes (hidden by default) -->
+      <div id="tee-F-${course.id}" style="display:none">
+        <div style="display:grid;grid-template-columns:24px 70px 70px 1fr;gap:6px;margin-bottom:4px;padding:0 2px">
+          <div style="font-size:10px;font-weight:700;color:var(--muted);text-align:center">#</div>
+          <div style="font-size:10px;font-weight:700;color:var(--muted);text-align:center">Par</div>
+          <div style="font-size:10px;font-weight:700;color:var(--muted);text-align:center">SI (F)</div>
+          <div></div>
+        </div>
+        ${course.holesF.map(h => `
+          <div class="course-hole-row">
+            <div class="hole-num">${h.hole}</div>
+            <select class="hole-input" onchange="updateHolePar('${course.id}',${h.hole},this.value,'F')">
+              ${[3,4,5].map(p=>`<option value="${p}" ${h.par==p?'selected':''}>${p}</option>`).join('')}
+            </select>
+            <input type="number" class="hole-input" min="1" max="18" value="${h.si}"
+              onchange="updateHoleSI('${course.id}',${h.hole},this.value,'F')" placeholder="SI">
+            <div style="font-size:10px;color:var(--muted)">${h.par===3?'P3':''} ${h.si===1?'★':''}</div>
+          </div>`).join('')}
+      </div>
+    `;
+    list.appendChild(div);
+  });
+  populateCourseSelect();
+}
+
+function showCourseTee(courseId, gender, btn) {
+  document.getElementById(`tee-M-${courseId}`).style.display = gender === 'M' ? '' : 'none';
+  document.getElementById(`tee-F-${courseId}`).style.display = gender === 'F' ? '' : 'none';
+  const btnM = document.getElementById(`tee-btn-M-${courseId}`);
+  const btnF = document.getElementById(`tee-btn-F-${courseId}`);
+  if (btnM) { btnM.style.background = gender==='M' ? 'rgba(100,149,237,0.3)' : 'rgba(0,0,0,0.1)'; btnM.style.color = gender==='M' ? '#6495ed' : 'var(--muted)'; }
+  if (btnF) { btnF.style.background = gender==='F' ? 'rgba(255,105,180,0.3)' : 'rgba(0,0,0,0.1)'; btnF.style.color = gender==='F' ? '#ff69b4' : 'var(--muted)'; }
+}
+
+function updateCourseName(id, val) {
+  const c = savedCourses.find(x => x.id === id);
+  if (c) { c.name = val; saveCourses(); }
+}
+function updateHolePar(id, hole, val, tee = 'M') {
+  const c = savedCourses.find(x => x.id === id);
+  if (!c) return;
+  const arr = tee === 'F' ? (c.holesF || c.holes) : c.holes;
+  const h = arr.find(x => x.hole === hole);
+  if (h) h.par = parseInt(val);
+  saveCourses();
+  // Re-render to update par total in tab label
+  renderCourses();
+}
+function updateHoleSI(id, hole, val, tee = 'M') {
+  const c = savedCourses.find(x => x.id === id);
+  if (!c) return;
+  const arr = tee === 'F' ? (c.holesF || c.holes) : c.holes;
+  const h = arr.find(x => x.hole === hole);
+  if (h) h.si = parseInt(val);
+  saveCourses();
+}
+
+function populateCourseSelect() {
+  loadCourses();
+  // Populate BOTH the scoring tab select AND the setup tab select
+  const selects = [
+    document.getElementById('scoring-course-select'),
+    document.getElementById('course-select')
+  ];
+  selects.forEach(sel => {
+    if (!sel) return;
+    const cur = sel.value;
+    const isSetup = sel.id === 'course-select';
+    const unlisted = isSetup ? '<option value="__custom__">✏️ Unlisted / Add new course…</option>' : '';
+    sel.innerHTML = '<option value="">— choose course —</option>' +
+      savedCourses.map(c => `<option value="${c.id}" ${cur===c.id?'selected':''}>${c.name}</option>`).join('') +
+      unlisted;
+  });
+}
+
+function getCourseName() {
+  const sel = document.getElementById('course-select');
+  if (sel && sel.value && sel.value !== '__custom__') {
+    loadCourses();
+    const c = savedCourses.find(x => x.id === sel.value);
+    return c ? c.name : document.getElementById('course')?.value || '';
+  }
+  return document.getElementById('course')?.value || '';
+}
+
+function handleCourseSelect(val) {
+  const wrap      = document.getElementById('course-custom-wrap');
+  const hidden    = document.getElementById('course-name-hidden');
+  const textInput = document.getElementById('course');
+
+  if (val === '__custom__') {
+    wrap.style.display = '';
+    if (textInput) textInput.value = '';
+    if (hidden) hidden.value = '';
+    if (textInput) textInput.focus();
+    // Clear scoring course select since no known course selected
+    const scoringSel = document.getElementById('scoring-course-select');
+    if (scoringSel) scoringSel.value = '';
+  } else if (val) {
+    wrap.style.display = 'none';
+    loadCourses();
+    const course = savedCourses.find(c => c.id === val);
+    const name = course ? course.name : '';
+    if (hidden) hidden.value = name;
+    if (textInput) textInput.value = name;
+    // ── Sync to Scoring tab course select ──
+    const scoringSel = document.getElementById('scoring-course-select');
+    if (scoringSel) scoringSel.value = val;
+  } else {
+    wrap.style.display = 'none';
+    if (hidden) hidden.value = '';
+    if (textInput) textInput.value = '';
+    const scoringSel = document.getElementById('scoring-course-select');
+    if (scoringSel) scoringSel.value = '';
+  }
+  saveState();
+}
+
+// ════════════════════════════════════════════════════════
+// SCORING SETUP
+// ════════════════════════════════════════════════════════
+let scoringGroups = [];  // [{id, players:[{name,hcp}]}]
+
+function renderScoringSetup() {
+  populateCourseSelect();
+  if (roundState && !roundState.endedAt) {
+    // Round in progress — show scorer login
+    document.getElementById('scoring-setup').style.display  = 'none';
+    document.getElementById('scoring-active').style.display = 'none';
+    if (activeScorer) {
+      enterScoringView();
+    } else {
+      showScorerLogin();
+    }
+    return;
+  }
+  // No active round — show setup
+  document.getElementById('scoring-setup').style.display  = '';
+  document.getElementById('scorer-login').style.display   = 'none';
+  document.getElementById('scoring-active').style.display = 'none';
+  renderScoringGroups();
+}
+
+function addScoringGroup() {
+  const id = 'sg_' + Date.now();
+  scoringGroups.push({ id, scorer: '', players: [
+    {name:'',hcp:18},{name:'',hcp:18},{name:'',hcp:18},{name:'',hcp:18}
+  ]});
+  renderScoringGroups();
+}
+
+function renderScoringGroups() {
+  const container = document.getElementById('scoring-groups');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const activePlayers = players.filter(p => p.name.trim());
+  const hasActivePlayers = activePlayers.length > 0;
+
+  // Build set of all names already assigned across ALL groups
+  const allAssigned = new Set(
+    scoringGroups.flatMap(g => g.players.map(p => p.name).filter(Boolean))
+  );
+
+  // Unassigned players warning
+  const unassigned = activePlayers.filter(p => !allAssigned.has(p.name));
+
+  if (scoringGroups.length === 0) {
+    const warn = unassigned.length > 0
+      ? `<div style="background:rgba(255,159,67,0.1);border:1px solid rgba(255,159,67,0.3);
+          border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:#ff9f43">
+          ⚠️ ${activePlayers.length} player${activePlayers.length!==1?'s':''} selected — add groups to assign them
+         </div>` : '';
+    container.innerHTML = warn + `<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">
+      No groups yet — add a group below</div>`;
+    updateUnassignedBanner(unassigned);
+    return;
+  }
+
+  // Show unassigned banner above groups
+  updateUnassignedBanner(unassigned);
+
+  scoringGroups.forEach((grp, gi) => {
+    const div = document.createElement('div');
+    div.className = 'scoring-group-setup';
+
+    // Names taken by OTHER groups (not this one)
+    const takenByOthers = new Set(
+      scoringGroups
+        .filter(g => g.id !== grp.id)
+        .flatMap(g => g.players.map(p => p.name).filter(Boolean))
+    );
+
+    // Names taken within THIS group (for slot-level exclusion)
+    const takenInGroup = new Set(grp.players.map(p => p.name).filter(Boolean));
+
+    const playerRows = grp.players.map((p, pi) => {
+      // Options: available = not taken by others, not taken in other slots of this group
+      // (player's own current slot value is always included)
+      const opts = activePlayers.map((ap, idx) => {
+        const isSelf    = ap.name === p.name;
+        const disabled  = !isSelf && (takenByOthers.has(ap.name) || takenInGroup.has(ap.name));
+        return `<option value="${ap.name}" ${p.name === ap.name ? 'selected' : ''}
+                  ${disabled ? 'disabled style="color:rgba(247,243,235,0.25)"' : ''}>
+                  ${idx + 1}. ${ap.name}${ap.isGuest ? ' ✦' : ''}${disabled ? ' (taken)' : ''}
+                </option>`;
+      }).join('');
+
+      const isScorer = grp.scorer === p.name && p.name;
+      const gColor   = (p.gender || 'M') === 'F' ? '#ff69b4' : '#6495ed';
+      const gBg      = (p.gender || 'M') === 'F' ? 'rgba(255,105,180,0.2)' : 'rgba(100,149,237,0.2)';
+
+      return `<div class="player-setup-row" style="align-items:center">
+        <select onchange="updateScoringPlayer('${grp.id}',${pi},'name',this.value)"
+          style="background:var(--input-bg);border:1px solid rgba(201,146,42,0.2);border-radius:7px;
+          color:var(--cream);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 10px;
+          width:100%;outline:none;-webkit-appearance:none">
+          <option value="">— Slot ${pi + 1} —</option>
+          ${opts}
+        </select>
+        ${p.name ? `
+          <span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:8px;
+            background:${gBg};color:${gColor};white-space:nowrap;flex-shrink:0">${p.gender||'M'}</span>
+        ` : ''}
+        <input type="number" class="hcp-input" min="0" max="36"
+          placeholder="HCP" title="Handicap (editable)"
+          value="${p.hcp != null ? p.hcp : ''}"
+          style="border-color:${p.name && p.hcp != null ? 'rgba(93,222,133,0.4)' : 'rgba(201,146,42,0.25)'}"
+          onchange="updateScoringPlayer('${grp.id}',${pi},'hcp',this.value)">
+        ${p.name ? `
+          <button onclick="setScorer('${grp.id}','${p.name}')" title="Set as scorer"
+            style="flex-shrink:0;width:32px;height:32px;border-radius:50%;cursor:pointer;
+            font-size:14px;border:2px solid ${isScorer ? 'var(--gold)' : 'rgba(201,146,42,0.25)'};
+            background:${isScorer ? 'rgba(201,146,42,0.25)' : 'transparent'};
+            color:${isScorer ? 'var(--gold)' : 'var(--muted)'};
+            display:flex;align-items:center;justify-content:center">✏️</button>
+        ` : `<div style="width:32px;flex-shrink:0"></div>`}
+      </div>`;
+    }).join('');
+
+    const scorerName = grp.scorer || 'Not set';
+    const scorerSet  = !!grp.scorer;
+
+    div.innerHTML = `
+      <div class="scoring-group-header">
+        <div>
+          <div class="scoring-group-title">Group ${gi + 1}</div>
+          <div style="font-size:11px;color:${scorerSet ? 'var(--gold2)' : '#ff9f43'};margin-top:2px">
+            ✏️ Scorer: ${scorerSet ? scorerName : '<span style="color:#ff9f43">not set — tap ✏️</span>'}
+          </div>
+        </div>
+        <button onclick="removeScoringGroup('${grp.id}')"
+          style="background:none;border:none;color:#ff6b6b;cursor:pointer;font-size:16px">✕</button>
+      </div>
+      ${!hasActivePlayers
+        ? `<div style="font-size:12px;color:#ff9f43;font-style:italic;padding:6px 0">
+            ⚠️ No players selected — go to Players tab first</div>`
+        : playerRows
+      }`;
+    container.appendChild(div);
+  });
+}
+
+function updateUnassignedBanner(unassigned) {
+  // Show/update a sticky banner above the groups container
+  let banner = document.getElementById('unassigned-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'unassigned-banner';
+    const container = document.getElementById('scoring-groups');
+    if (container?.parentNode) container.parentNode.insertBefore(banner, container);
+  }
+  if (unassigned.length === 0) {
+    banner.innerHTML = '';
+    banner.style.display = 'none';
+    return;
+  }
+  banner.style.display = '';
+  banner.innerHTML = `
+    <div style="background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.35);
+      border-radius:8px;padding:10px 12px;margin-bottom:10px">
+      <div style="font-size:11px;font-weight:700;color:#ff6b6b;margin-bottom:5px">
+        ⚠️ ${unassigned.length} player${unassigned.length!==1?'s':''} not assigned to a group
+      </div>
+      <div style="font-size:12px;color:rgba(247,243,235,0.7)">
+        ${unassigned.map((p,i) => `<span style="background:rgba(255,107,107,0.15);
+          border-radius:10px;padding:2px 8px;margin:2px;display:inline-block">
+          ${i + 1 + (players.length - unassigned.length)}. ${p.name}</span>`).join('')}
+      </div>
+    </div>`;
+}
+
+function setScorer(gid, name) {
+  const grp = scoringGroups.find(g => g.id === gid);
+  if (!grp) return;
+  grp.scorer = (grp.scorer === name) ? '' : name; // toggle off if already scorer
+  renderScoringGroups();
+  saveRoundState();
+}
+
+function updateScoringPlayer(gid, pi, field, val) {
+  const grp = scoringGroups.find(g => g.id === gid);
+  if (!grp) return;
+  if (field === 'hcp') {
+    grp.players[pi].hcp = Math.min(36, Math.max(0, parseInt(val) || 0));
+  } else {
+    const old = grp.players[pi].name;
+    grp.players[pi].name = val;
+
+    // Auto-carry hcp and gender from the Players tab when a name is selected
+    if (val) {
+      const match = players.find(p => p.name === val);
+      if (match) {
+        grp.players[pi].hcp    = match.hcp    ?? 18;
+        grp.players[pi].gender = match.gender ?? 'M';
+      }
+    }
+
+    // Scorer housekeeping
+    if (grp.scorer === old && old !== val) grp.scorer = '';
+    if (!grp.scorer && val) grp.scorer = val;
+  }
+  renderScoringGroups();
+  saveRoundState();
+}
+
+function removeScoringGroup(id) {
+  scoringGroups = scoringGroups.filter(g => g.id !== id);
+  renderScoringGroups();
+  saveRoundState();
+}
+
+// ════════════════════════════════════════════════════════
+// SCORER LOGIN
+// ════════════════════════════════════════════════════════
+let activeScorer = null; // { name, groupId }
+
+function showScorerLogin() {
+  document.getElementById('scoring-setup').style.display  = 'none';
+  document.getElementById('scorer-login').style.display   = '';
+  document.getElementById('scoring-active').style.display = 'none';
+
+  const list = document.getElementById('scorer-login-list');
+  list.innerHTML = '';
+
+  roundState.groups.forEach((grp, gi) => {
+    const scorerName = grp.scorer;
+    if (!scorerName) return;
+    const btn = document.createElement('button');
+    btn.style.cssText = `width:100%;background:var(--input-bg);border:1px solid rgba(201,146,42,0.2);
+      border-radius:10px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:15px;
+      font-weight:600;padding:14px 16px;cursor:pointer;margin-bottom:10px;text-align:left;
+      display:flex;justify-content:space-between;align-items:center`;
+    btn.innerHTML = `
+      <span>${scorerName}</span>
+      <span style="font-size:11px;color:var(--muted)">Group ${gi + 1} · ${grp.players.filter(p=>p.name).length} players</span>`;
+    btn.onclick = () => claimScorer(grp.id, scorerName);
+    list.appendChild(btn);
+  });
+
+  // If already claimed, show resume button
+  if (activeScorer) {
+    const resumeDiv = document.createElement('div');
+    resumeDiv.style.cssText = 'background:rgba(93,222,133,0.1);border:1px solid rgba(93,222,133,0.3);' +
+      'border-radius:10px;padding:12px;margin-bottom:10px;font-size:13px;color:#5dde85;text-align:center;cursor:pointer';
+    resumeDiv.innerHTML = `▶ Resume as ${activeScorer.name}`;
+    resumeDiv.onclick = () => enterScoringView();
+    list.insertBefore(resumeDiv, list.firstChild);
+  }
+}
+
+function claimScorer(groupId, name) {
+  activeScorer = { name, groupId };
+  saveRoundState();
+  enterScoringView();
+}
+
+function enterScoringView() {
+  document.getElementById('scorer-login').style.display   = 'none';
+  document.getElementById('scoring-active').style.display = '';
+  const label = document.getElementById('active-scorer-label');
+  if (label && activeScorer) label.textContent = `✏️ ${activeScorer.name}`;
+  renderHoleView();
+}
+
+function backToSetup() {
+  clearTimeout(adjustScore._advanceTimer);
+  activeScorer = null;
+  document.getElementById('scoring-setup').style.display  = '';
+  document.getElementById('scorer-login').style.display   = 'none';
+  document.getElementById('scoring-active').style.display = 'none';
+}
+
+// ════════════════════════════════════════════════════════
+// STABLEFORD TOGGLE
+// ════════════════════════════════════════════════════════
+function isStablefordOn() {
+  return document.getElementById('g-stableford')?.checked ?? true;
+}
+
+// ════════════════════════════════════════════════════════
+// GOOGLE SHEETS SYNC
+// ════════════════════════════════════════════════════════
+// Replace this URL with your deployed Apps Script URL
+const APPS_SCRIPT_URL = '';  // Set after deployment
+
+async function syncToSheets(payload) {
+  if (!APPS_SCRIPT_URL) return; // Skip if not configured
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  } catch(e) {
+    console.warn('Sheets sync failed:', e);
+  }
+}
+
+async function loadFromSheets() {
+  if (!APPS_SCRIPT_URL) return null;
+  try {
+    const r = await fetch(`${APPS_SCRIPT_URL}?action=load`, { mode: 'cors' });
+    if (r.ok) return await r.json();
+  } catch(e) {
+    console.warn('Sheets load failed:', e);
+  }
+  return null;
+}
+function startRound() {
+  const courseId = document.getElementById('scoring-course-select')?.value;
+  if (!courseId) { alert('Please select a course first.'); return; }
+  loadCourses();
+  const course = savedCourses.find(c => c.id === courseId);
+  if (!course) return;
+
+  // Validate: every active player must be assigned
+  const activePlayers = players.filter(p => p.name.trim());
+  const allAssigned = new Set(
+    scoringGroups.flatMap(g => g.players.map(p => p.name).filter(Boolean))
+  );
+  const unassigned = activePlayers.filter(p => !allAssigned.has(p.name));
+  if (unassigned.length > 0) {
+    alert(`⚠️ ${unassigned.length} player${unassigned.length!==1?'s are':' is'} not assigned to a group:\n\n${unassigned.map(p=>p.name).join(', ')}\n\nAssign all players before starting.`);
+    return;
+  }
+
+  // Validate: every group needs a scorer
+  const groupsWithoutScorer = scoringGroups
+    .filter(g => g.players.some(p => p.name) && !g.scorer);
+  if (groupsWithoutScorer.length > 0) {
+    alert(`⚠️ Group${groupsWithoutScorer.length>1?'s':''} ${groupsWithoutScorer.map((_,i)=>scoringGroups.indexOf(_)+1).join(', ')} need${groupsWithoutScorer.length===1?'s':''} a scorer assigned.\n\nTap the ✏️ button next to each scorer.`);
+    return;
+  }
+
+  if (activePlayers.length === 0) { alert('Add at least one player.'); return; }
+
+  // Build round state — assign correct tee holes per player gender
+  roundState = {
+    courseId,
+    courseName: course.name,
+    holes:  course.holes,  // default (male) tee for general hole info
+    holesF: course.holesF || course.holes, // female tee (falls back to male)
+    groups: scoringGroups.map(g => ({
+      ...g,
+      players: g.players.filter(p => p.name.trim())
+    })).filter(g => g.players.length > 0),
+    scores: {},
+    ctpWinners: {},
+    startedAt: Date.now()
+  };
+
+  // Helper: get the right hole data for a player based on gender
+  roundState.getHoleForPlayer = function(holeNum, gender) {
+    const teeHoles = (gender === 'F') ? this.holesF : this.holes;
+    return teeHoles[holeNum - 1];
+  };
+
+  // Init scores
+  roundState.groups.forEach(g => g.players.forEach(p => {
+    roundState.scores[p.name] = {};
+  }));
+
+  currentHole = 1;
+  activeScorer = null;
+  saveRoundState();
+  // Show scorer login instead of jumping straight to scoring
+  showScorerLogin();
+}
+
+function endRound() {
+  if (!confirm('End this round? This will finalize scores and populate payouts.')) return;
+  roundState.endedAt = Date.now();
+  saveRoundState();
+  finalizeRound();
+}
+
+// ════════════════════════════════════════════════════════
+// ROUND RESULTS ENGINE
+// ════════════════════════════════════════════════════════
+
+function getNetScore(playerName, holeNum) {
+  // Returns net score for a player on a hole, or null if not scored
+  const scoreData = roundState.scores[playerName]?.[holeNum];
+  return scoreData ? scoreData.net : null;
+}
+
+function getTotalStablefordPts(playerName) {
+  return Object.values(roundState.scores[playerName] || {})
+    .reduce((s, h) => s + (h.pts || 0), 0);
+}
+
+function breakTie(nameA, nameB) {
+  // Tiebreaker: compare net scores on holes sorted hardest first (SI 1, 2, 3...)
+  const holesBySI = [...roundState.holes].sort((a, b) => a.si - b.si);
+  for (const hole of holesBySI) {
+    const netA = getNetScore(nameA, hole.hole);
+    const netB = getNetScore(nameB, hole.hole);
+    if (netA === null || netB === null) continue;
+    if (netA < netB) return -1; // A wins (lower net is better)
+    if (netB < netA) return  1; // B wins
+  }
+  return 0; // still tied
+}
+
+function sortByStablefordWithTiebreak(playerNames) {
+  return [...playerNames].sort((a, b) => {
+    const ptsDiff = getTotalStablefordPts(b) - getTotalStablefordPts(a);
+    if (ptsDiff !== 0) return ptsDiff;
+    return breakTie(a, b);
+  });
+}
+
+function computeRoundResults() {
+  if (!roundState) return null;
+
+  // All scored players
+  const allPlayers = roundState.groups.flatMap(g => g.players);
+  const names = allPlayers.map(p => p.name);
+
+  // ── CHAMPION ──────────────────────────────────────────
+  const champRanking = sortByStablefordWithTiebreak(names);
+  const champion = champRanking[0] || null;
+
+  // ── QUOTA TOP 4 ───────────────────────────────────────
+  const quotaTop4 = champRanking.slice(0, 4);
+
+  // ── SKINS ─────────────────────────────────────────────
+  // Rules: lowest NET score wins hole outright
+  // Must be par or better (net <= par) to win
+  // Ties = no winner (skin lost, does NOT carry over)
+  const skinWinners = []; // [{hole, winner, netScore}]
+
+  for (const hole of roundState.holes) {
+    const holeNum = hole.hole;
+    const holePar = hole.par;
+    const holeSI  = hole.si;
+
+    // Collect net scores for all players on this hole
+    const holeResults = allPlayers
+      .map(p => {
+        const scored = roundState.scores[p.name]?.[holeNum];
+        if (!scored) return null;
+        return { name: p.name, net: scored.net, gross: scored.gross };
+      })
+      .filter(Boolean);
+
+    if (holeResults.length === 0) continue;
+
+    // Best net score on the hole
+    const bestNet = Math.min(...holeResults.map(r => r.net));
+
+    // Must be par or better to win
+    if (bestNet > holePar) continue;
+
+    // Check for tie
+    const winners = holeResults.filter(r => r.net === bestNet);
+    if (winners.length === 1) {
+      skinWinners.push({ hole: holeNum, winner: winners[0].name, net: bestNet });
+    }
+    // Tie = no winner, skin lost (not awarded)
+  }
+
+  // ── CTP ───────────────────────────────────────────────
+  // Already tracked in roundState.ctpWinners — just pass through
+  const ctpWinners = roundState.ctpWinners || {};
+
+  return { champion, quotaTop4, skinWinners, ctpWinners, allPlayers };
+}
+
+function finalizeRound() {
+  const results = computeRoundResults();
+  if (!results) { alert('No round data to finalize.'); return; }
+
+  // Make sure payouts tab is rendered first
+  calcAndShowPots();
+
+  // Small delay to ensure DOM is ready after calcAndShowPots triggers re-render
+  setTimeout(() => {
+    populatePayoutsFromResults(results);
+    showTab('payouts');
+  }, 150);
+}
+
+function populatePayoutsFromResults(results) {
+  // ── CHAMPION ──────────────────────────────────────────
+  const champEl = document.getElementById('champ-winner');
+  if (champEl && results.champion) {
+    champEl.value = results.champion;
+  }
+
+  // ── QUOTA TOP 4 ───────────────────────────────────────
+  ['quota-1','quota-2','quota-3','quota-4'].forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el && results.quotaTop4[i]) el.value = results.quotaTop4[i];
+  });
+
+  // ── SKINS ─────────────────────────────────────────────
+  const skinCount = results.skinWinners.length;
+  if (skinCount > 0) {
+    skinsCount = skinCount;
+    // Update skins count display
+    const display = document.getElementById('skins-count-display');
+    if (display) display.textContent = skinCount;
+    // Update per-skin amount
+    const pot = pots['skins']?.total || 0;
+    const perSkin = skinCount > 0 ? pot / skinCount : 0;
+    const perEl = document.getElementById('skins-per');
+    if (perEl) perEl.textContent = `${fmt(pot)} ÷ ${skinCount} skin${skinCount!==1?'s':''} = ${fmt(perSkin)} / skin`;
+
+    // Show and populate each skin row
+    results.skinWinners.forEach((skin, i) => {
+      const rowNum = i + 1;
+      const row = document.getElementById(`skin-row-${rowNum}`);
+      const sel  = document.getElementById(`skin-winner-${rowNum}`);
+      const amt  = document.getElementById(`skin-amt-${rowNum}`);
+      if (row) row.style.display = '';
+      if (sel) sel.value = skin.winner;
+      if (amt) amt.textContent = fmt(perSkin);
+      // Update place label to show hole number
+      const place = row?.querySelector('.payout-place');
+      if (place) place.textContent = `Hole ${skin.hole}`;
+    });
+    // Hide unused rows
+    for (let i = skinCount + 1; i <= 18; i++) {
+      const row = document.getElementById(`skin-row-${i}`);
+      if (row) row.style.display = 'none';
+    }
+  }
+
+  // ── CTP ───────────────────────────────────────────────
+  // Map CTP winners from scoring (ctpWinners[holeNum] = playerName)
+  // to the 4 Par 3 slots in payouts
+  const par3Holes = roundState.holes
+    .filter(h => h.par === 3)
+    .map(h => h.hole);
+
+  par3Holes.forEach((holeNum, i) => {
+    const slotNum = i + 1;
+    const winner = results.ctpWinners[holeNum];
+    const holeInput = document.getElementById(`ctp-hole-${slotNum}`);
+    const winnerSel = document.getElementById(`ctp-winner-${slotNum}`);
+    if (holeInput) holeInput.value = holeNum;
+    if (winnerSel && winner) winnerSel.value = winner;
+  });
+  // Trigger CTP recalculation
+  updateCTP();
+
+  // Trigger ledger rebuild
+  buildLedger();
+
+  // Show confirmation banner
+  showFinalizeBanner(results);
+}
+
+function showFinalizeBanner(results) {
+  const existing = document.getElementById('finalize-banner');
+  if (existing) existing.remove();
+
+  const skinCount = results.skinWinners.length;
+  const ctpCount  = Object.keys(results.ctpWinners).length;
+
+  const banner = document.createElement('div');
+  banner.id = 'finalize-banner';
+  banner.style.cssText = `
+    background:linear-gradient(135deg,rgba(93,222,133,0.12),rgba(93,222,133,0.06));
+    border:1px solid rgba(93,222,133,0.35);border-radius:12px;
+    padding:14px 16px;margin-bottom:14px;
+  `;
+  banner.innerHTML = `
+    <div style="font-size:12px;font-weight:700;color:#5dde85;margin-bottom:8px">
+      ✅ Round Finalized — Payouts Auto-Populated
+    </div>
+    <div style="font-size:12px;color:rgba(247,243,235,0.75);line-height:1.8">
+      🏆 Champion: <strong style="color:var(--cream)">${results.champion || '—'}</strong><br>
+      📊 Quota: <strong style="color:var(--cream)">${results.quotaTop4.slice(0,4).join(', ') || '—'}</strong><br>
+      🦴 Skins: <strong style="color:var(--cream)">${skinCount} skin${skinCount!==1?'s':''} awarded</strong><br>
+      📍 CTP: <strong style="color:var(--cream)">${ctpCount} hole${ctpCount!==1?'s':''} set</strong>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:8px;font-style:italic">
+      Blind Draw must be entered manually. Review all selections before sending payouts.
+    </div>`;
+
+  // Insert at top of payouts content
+  const payoutsContent = document.getElementById('payouts-content');
+  if (payoutsContent) payoutsContent.insertBefore(banner, payoutsContent.firstChild);
+}
+
+function saveRoundState() {
+  try {
+    localStorage.setItem('fpg_round', JSON.stringify({ roundState, scoringGroups, currentHole, activeScorer }));
+    syncToSheets({ action: 'saveRound', roundState, scoringGroups, currentHole });
+  } catch(e) {}
+}
+
+function loadRoundState() {
+  try {
+    const raw = localStorage.getItem('fpg_round');
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    roundState    = data.roundState   || null;
+    scoringGroups = data.scoringGroups || [];
+    currentHole   = data.currentHole  || 1;
+    activeScorer  = data.activeScorer || null;
+    // Re-attach non-serializable helper
+    if (roundState) {
+      roundState.getHoleForPlayer = function(holeNum, gender) {
+        const teeHoles = (gender === 'F') ? (this.holesF || this.holes) : this.holes;
+        return teeHoles[holeNum - 1];
+      };
+    }
+  } catch(e) {}
+}
+
+// ════════════════════════════════════════════════════════
+// STABLEFORD CALCULATION
+// ════════════════════════════════════════════════════════
+function getStablefordPts(grossScore, par, hcp, holeSI) {
+  // Does player get a stroke on this hole?
+  const strokes = hcp >= holeSI ? 1 : 0;
+  const netScore = grossScore - strokes;
+  const diff = netScore - par;
+  // diff: -3=albatross, -2=eagle, -1=birdie, 0=par, +1=bogey, +2=double, +3+=triple
+  if (diff <= -3) return { pts: 5, label: 'Albatross', cls: 'score-albatross' };
+  if (diff === -2) return { pts: 4, label: 'Eagle',    cls: 'score-eagle'     };
+  if (diff === -1) return { pts: 3, label: 'Birdie',   cls: 'score-birdie'    };
+  if (diff ===  0) return { pts: 2, label: 'Par',      cls: 'score-par'       };
+  if (diff ===  1) return { pts: 1, label: 'Bogey',    cls: 'score-bogey'     };
+  return                  { pts: 0, label: diff===2?'Double':'Triple+', cls: diff===2?'score-double':'score-triple' };
+}
+
+function scoreLabel(gross, par) {
+  const d = gross - par;
+  if (d <= -3) return 'Albatross';
+  if (d === -2) return 'Eagle';
+  if (d === -1) return 'Birdie';
+  if (d ===  0) return 'Par';
+  if (d ===  1) return 'Bogey';
+  if (d ===  2) return 'Double';
+  return 'Triple+';
+}
+
+// ════════════════════════════════════════════════════════
+// HOLE VIEW
+// ════════════════════════════════════════════════════════
+function renderHoleView() {
+  if (!roundState) return;
+  // Use male tee for general hole display (par, SI in header)
+  const hole = roundState.holes[currentHole - 1];
+  const isPar3 = hole.par === 3;
+
+  // Header
+  document.getElementById('hole-display').textContent = `HOLE ${currentHole}`;
+  document.getElementById('hole-par-display').textContent =
+    `${roundState.courseName} · Par ${hole.par} · SI ${hole.si}`;
+
+  // Nav buttons
+  document.getElementById('btn-prev-hole').style.opacity = currentHole === 1 ? '0.3' : '1';
+  document.getElementById('btn-next-hole').textContent   = currentHole === 18 ? '18' : '›';
+  document.getElementById('btn-next-hole').style.opacity = '1';
+
+  // Hole dots
+  const dots = document.getElementById('hole-dots');
+  dots.innerHTML = '';
+  for (let i = 1; i <= 18; i++) {
+    const allScored = roundState.groups.every(g =>
+      g.players.every(p => roundState.scores[p.name]?.[i]));
+    const d = document.createElement('div');
+    d.className = 'hole-dot' + (i === currentHole ? ' active' : allScored ? ' scored' : '');
+    d.textContent = i;
+    d.onclick = () => { currentHole = i; renderHoleView(); };
+    dots.appendChild(d);
+  }
+
+  // CTP banner
+  const ctpBanner = document.getElementById('ctp-banner');
+  ctpBanner.style.display = isPar3 ? '' : 'none';
+  if (isPar3) {
+    const allPlayers = roundState.groups.flatMap(g => g.players.map(p => p.name));
+    const ctpSel = document.getElementById('ctp-live-select');
+    ctpSel.innerHTML = '<option value="">— select CTP winner —</option>' +
+      allPlayers.map(n => `<option value="${n}" ${roundState.ctpWinners[currentHole]===n?'selected':''}>${n}</option>`).join('');
+    const holder = document.getElementById('ctp-current-holder');
+    holder.textContent = roundState.ctpWinners[currentHole]
+      ? `Current leader: ${roundState.ctpWinners[currentHole]}`
+      : 'No leader yet — tap to set';
+  }
+
+  const useStableford = isStablefordOn();
+
+  // Filter groups: show only the active scorer's group if logged in
+  const visibleGroups = activeScorer
+    ? roundState.groups.filter(g => g.id === activeScorer.groupId)
+    : roundState.groups;
+
+  // Group scorecards
+  const container = document.getElementById('scoring-group-cards');
+  container.innerHTML = '';
+
+  visibleGroups.forEach((grp, gi) => {
+    const card = document.createElement('div');
+    card.className = 'score-card';
+
+    const holeScores = grp.players.map(p => {
+      const saved = roundState.scores[p.name]?.[currentHole];
+      return saved ? saved.gross : hole.par; // default to par
+    });
+
+    card.innerHTML = `
+      <div class="score-card-header">
+        <div class="group-label">Group ${gi+1}</div>
+        <div style="font-size:11px;color:var(--gold2)">
+          ✏️ ${grp.scorer || '—'}
+        </div>
+      </div>
+      ${grp.players.map((p, pi) => {
+        const playerHole = roundState.getHoleForPlayer
+          ? roundState.getHoleForPlayer(currentHole, p.gender || 'M')
+          : hole;
+        const saved    = roundState.scores[p.name]?.[currentHole];
+        const strokes  = (p.hcp || 18) >= playerHole.si ? 1 : 0;
+        const netPar   = playerHole.par - strokes;
+        const gross    = saved ? saved.gross : playerHole.par;
+        const sf       = getStablefordPts(gross, playerHole.par, p.hcp || 18, playerHole.si);
+        const totalPts = Object.values(roundState.scores[p.name]||{}).reduce((s,h)=>s+(h.pts||0),0);
+        const genderColor = (p.gender||'M') === 'F' ? '#ff69b4' : '#6495ed';
+        const hcpInfo = useStableford
+          ? `HCP ${p.hcp||18} · ${strokes?'↓1':'—'} · ${totalPts}pts`
+          : `HCP ${p.hcp||18} · ${strokes?'1 stroke':'no stroke'}`;
+        return `
+          <div class="score-player-row" id="spr-${grp.id}-${pi}">
+            <div>
+              <div class="score-player-name">
+                ${p.name}
+                <span style="font-size:9px;font-weight:700;padding:1px 4px;border-radius:6px;
+                  background:${(p.gender||'M')==='F'?'rgba(255,105,180,0.2)':'rgba(100,149,237,0.2)'};
+                  color:${genderColor}">${p.gender||'M'}</span>
+              </div>
+              <div class="score-player-hcp">${hcpInfo}</div>
+            </div>
+            <button class="score-btn score-btn-minus" onclick="adjustScore('${grp.id}',${pi},-1)">−</button>
+            <div class="score-display" id="sd-${grp.id}-${pi}">
+              <div class="score-strokes ${useStableford ? sf.cls : ''}">${gross}</div>
+              ${useStableford ? `
+                <div class="score-label ${sf.cls}">${sf.label}</div>
+                <div class="pts-badge" style="background:rgba(${sf.pts>2?'93,222,133':sf.pts>0?'201,146,42':'255,107,107'},0.2);
+                  color:${sf.pts>2?'#5dde85':sf.pts>0?'var(--gold2)':'#ff6b6b'}">
+                  ${sf.pts}pt
+                </div>` : `<div class="score-label" style="color:var(--muted)">${gross>hole.par?'+':''}${gross-hole.par===0?'E':gross-hole.par}</div>`}
+            </div>
+            <button class="score-btn score-btn-plus" onclick="adjustScore('${grp.id}',${pi},+1)">+</button>
+          </div>`;
+      }).join('')}
+    `;
+    container.appendChild(card);
+  });
+
+  saveRoundState();
+}
+
+function adjustScore(gid, pi, delta) {
+  if (!roundState) return;
+  const grp  = roundState.groups.find(g => g.id === gid);
+  if (!grp) return;
+  const p    = grp.players[pi];
+  const hole = roundState.getHoleForPlayer
+    ? roundState.getHoleForPlayer(currentHole, p.gender || 'M')
+    : roundState.holes[currentHole - 1];
+  const saved    = roundState.scores[p.name]?.[currentHole];
+  const curGross = saved ? saved.gross : hole.par;
+  const newGross = Math.max(1, Math.min(hole.par + 4, curGross + delta));
+  const sf = getStablefordPts(newGross, hole.par, p.hcp || 18, hole.si);
+
+  if (!roundState.scores[p.name]) roundState.scores[p.name] = {};
+  roundState.scores[p.name][currentHole] = {
+    gross: newGross,
+    net:   newGross - ((p.hcp || 18) >= hole.si ? 1 : 0),
+    pts:   sf.pts
+  };
+
+  const sd = document.getElementById(`sd-${gid}-${pi}`);
+  if (sd) {
+    const totalPts = Object.values(roundState.scores[p.name]).reduce((s,h)=>s+(h.pts||0),0);
+    const useStableford = isStablefordOn();
+    const holePar = hole.par;
+    sd.innerHTML = `
+      <div class="score-strokes ${useStableford ? sf.cls : ''}">${newGross}</div>
+      ${useStableford ? `
+        <div class="score-label ${sf.cls}">${sf.label}</div>
+        <div class="pts-badge" style="background:rgba(${sf.pts>2?'93,222,133':sf.pts>0?'201,146,42':'255,107,107'},0.2);
+          color:${sf.pts>2?'#5dde85':sf.pts>0?'var(--gold2)':'#ff6b6b'}">
+          ${sf.pts}pt
+        </div>` : `<div class="score-label" style="color:var(--muted)">${newGross>holePar?'+':''}${newGross-holePar===0?'E':newGross-holePar}</div>`}`;
+    const nameDiv = sd.closest('.score-player-row')?.querySelector('.score-player-hcp');
+    if (nameDiv && useStableford) nameDiv.textContent = `HCP ${p.hcp||18} · ${(p.hcp||18)>=hole.si?'↓1':'—'} · ${totalPts}pts`;
+  }
+
+  // Update hole dot
+  const allInGroupScored = roundState.groups.every(g =>
+    g.players.every(pl => roundState.scores[pl.name]?.[currentHole]));
+
+  const dots = document.getElementById('hole-dots');
+  if (dots) {
+    const dot = dots.children[currentHole - 1];
+    if (dot && allInGroupScored) dot.className = 'hole-dot scored';
+  }
+
+  saveRoundState();
+
+  // ── AUTO-ADVANCE ──────────────────────────────────────
+  // Once every player in every group has a score on this hole, advance after a short pause
+  if (allInGroupScored && currentHole < 18) {
+    // Clear any existing auto-advance timer
+    clearTimeout(adjustScore._advanceTimer);
+    // Flash a visual cue on the next-hole button
+    const nextBtn = document.getElementById('btn-next-hole');
+    if (nextBtn) {
+      nextBtn.style.background = 'rgba(93,222,133,0.3)';
+      nextBtn.style.borderColor = 'rgba(93,222,133,0.6)';
+      nextBtn.style.color = '#5dde85';
+    }
+    adjustScore._advanceTimer = setTimeout(() => {
+      // Reset button style
+      if (nextBtn) {
+        nextBtn.style.background = '';
+        nextBtn.style.borderColor = '';
+        nextBtn.style.color = '';
+      }
+      currentHole++;
+      renderHoleView();
+    }, 1200); // 1.2s pause so scorer can see the final score before advancing
+  }
+}
+
+function prevHole() {
+  // Cancel any pending auto-advance
+  clearTimeout(adjustScore._advanceTimer);
+  const nextBtn = document.getElementById('btn-next-hole');
+  if (nextBtn) { nextBtn.style.background=''; nextBtn.style.borderColor=''; nextBtn.style.color=''; }
+  if (currentHole > 1) { currentHole--; renderHoleView(); }
+}
+
+function nextHole() {
+  if (currentHole < 18) {
+    currentHole++;
+    renderHoleView();
+  } else {
+    // On hole 18 — confirm end and finalize
+    endRound();
+  }
+}
+
+function updateLiveCTP() {
+  if (!roundState) return;
+  const val = document.getElementById('ctp-live-select')?.value;
+  if (val) {
+    roundState.ctpWinners[currentHole] = val;
+    document.getElementById('ctp-current-holder').textContent = `Current leader: ${val}`;
+  } else {
+    delete roundState.ctpWinners[currentHole];
+    document.getElementById('ctp-current-holder').textContent = 'No leader yet — tap to set';
+  }
+  saveRoundState();
+}
+
+// ════════════════════════════════════════════════════════
+// LEADERBOARD
+// ════════════════════════════════════════════════════════
+function refreshLeaderboard() {
+  loadRoundState();
+  const table  = document.getElementById('leaderboard-table');
+  const status = document.getElementById('lb-hole-status');
+  const cnEl   = document.getElementById('lb-course-name');
+  const ctpRow = document.getElementById('lb-ctp-row');
+
+  if (!roundState) {
+    table.innerHTML = `<div class="empty-state"><div class="em">🏆</div>Start a round in the Scoring tab to see live results</div>`;
+    status.textContent = 'No round in progress';
+    return;
+  }
+
+  cnEl.textContent   = roundState.courseName?.toUpperCase() || 'FPG LEADERBOARD';
+  const holesPlayed  = Math.max(...roundState.groups.flatMap(g =>
+    g.players.map(p => Object.keys(roundState.scores[p.name]||{}).length)
+  ), 0);
+  status.textContent = roundState.endedAt
+    ? `Final · ${roundState.courseName}`
+    : `Live · Thru ${holesPlayed} hole${holesPlayed!==1?'s':''}`;
+
+  // CTP row
+  const ctpEntries = Object.entries(roundState.ctpWinners||{});
+  if (ctpEntries.length > 0) {
+    ctpRow.style.display = '';
+    ctpRow.innerHTML = `
+      <div style="background:rgba(148,0,211,0.1);border:1px solid rgba(148,0,211,0.3);
+        border-radius:10px;padding:10px 14px;margin-bottom:8px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;color:#c084fc;margin-bottom:6px">📍 CTP LEADERS</div>
+        ${ctpEntries.map(([hole,name]) =>
+          `<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px">
+            <span style="color:var(--muted)">Hole ${hole} (Par 3)</span>
+            <span style="color:var(--cream);font-weight:600">${name}</span>
+          </div>`
+        ).join('')}
+      </div>`;
+  } else {
+    ctpRow.style.display = 'none';
+  }
+
+  // Build leaderboard data
+  const allPlayers = roundState.groups.flatMap(g => g.players);
+  const leaderData = allPlayers.map(p => {
+    const scoreData = roundState.scores[p.name] || {};
+    const totalPts  = Object.values(scoreData).reduce((s,h) => s+(h.pts||0), 0);
+    const totalGross = Object.values(scoreData).reduce((s,h) => s+(h.gross||0), 0);
+    const totalNet   = Object.values(scoreData).reduce((s,h) => s+(h.net||0), 0);
+    const thru       = Object.keys(scoreData).length;
+    const coursePar  = roundState.holes.slice(0, thru).reduce((s,h) => s+h.par, 0);
+    const toPar      = totalGross - coursePar;
+    return { name: p.name, hcp: p.hcp, totalPts, totalGross, totalNet, thru, toPar };
+  }).sort((a,b) => b.totalPts - a.totalPts || a.toPar - b.toPar);
+
+  // Column headers
+  let html = `
+    <div style="display:grid;grid-template-columns:28px 1fr 44px 44px 52px;gap:6px;
+      padding:6px 16px;border-bottom:1px solid rgba(201,146,42,0.2)">
+      <div style="font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--muted);text-align:center">#</div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--muted)">PLAYER</div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--muted);text-align:center">GROSS</div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--muted);text-align:center">NET</div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--muted);text-align:right">PTS</div>
+    </div>`;
+
+  leaderData.forEach((p, i) => {
+    const pos   = i + 1;
+    const toParStr = p.thru === 0 ? '—' : (p.toPar > 0 ? `+${p.toPar}` : `${p.toPar}`);
+    html += `
+      <div class="lb-row ${pos===1?'lb-leader':''}">
+        <div class="lb-pos ${pos<=3?'p'+pos:''}">${pos}</div>
+        <div>
+          <div class="lb-name">${p.name}</div>
+          <div class="lb-thru">${p.thru > 0 ? `Thru ${p.thru} · ${toParStr}` : 'Not started'}</div>
+        </div>
+        <div class="lb-gross">${p.thru > 0 ? p.totalGross : '—'}</div>
+        <div class="lb-net">${p.thru > 0 ? p.totalNet : '—'}</div>
+        <div class="lb-pts">${p.totalPts}</div>
+      </div>`;
+  });
+
+  table.innerHTML = html;
+
+  // Auto-refresh every 30s if round is live
+  if (!roundState.endedAt) {
+    clearTimeout(refreshLeaderboard._timer);
+    refreshLeaderboard._timer = setTimeout(refreshLeaderboard, 30000);
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// INIT EXTENSION — load round state on startup
+// ════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  loadCourses();
+  loadRoundState();
+  loadRosterProfiles();
+}, { once: false });
+</script>
+
+</body>
+</html>
